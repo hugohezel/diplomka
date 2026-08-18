@@ -39,10 +39,10 @@ jobs:
 
       - name: Configure Kubernetes
         env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
         run: |
           mkdir -p "$HOME/.kube"
-          echo "$KUBECONFIG_B64" | base64 --decode > "$HOME/.kube/config"
+          printf '%s' "$KUBECONFIG_DATA" > "$HOME/.kube/config"
           chmod 600 "$HOME/.kube/config"
 
       - name: Deploy
