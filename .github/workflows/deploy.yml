@@ -1,0 +1,68 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5
+        with:
+          version: latest
+
+      - name: Login to CERIT Harbor
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          echo "$HARBOR_PASSWORD" \
+            | docker login cerit.io \
+                --username "$HARBOR_USERNAME" \
+                --password-stdin
+
+      - name: Build and push image
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+        run: |
+          IMAGE="cerit.io/$HARBOR_USERNAME/diplomka:${GITHUB_SHA}"
+
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Configure Kubernetes
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          echo "$KUBECONFIG_B64" | base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Deploy
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+        run: |
+          IMAGE="cerit.io/$HARBOR_USERNAME/diplomka:${GITHUB_SHA}"
+
+          sed "s|IMAGE_PLACEHOLDER|$IMAGE|g" \
+            k8s/deployment.yaml \
+            > /tmp/deployment.yaml
+
+          kubectl apply \
+            -n "$NAMESPACE" \
+            -f /tmp/deployment.yaml \
+            -f k8s/service.yaml \
+            -f k8s/ingress.yaml
+
+          kubectl rollout status \
+            deployment/diplomka \
+            -n "$NAMESPACE" \
+            --timeout=120s
