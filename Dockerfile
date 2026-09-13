@@ -1,8 +1,8 @@
-FROM node:22-alpine
+FROM python:3.13-alpine
 
 WORKDIR /app
-COPY --chown=node:node server.js .
+COPY --chown=1000:1000 src/ ./src/
 
-USER node
+USER 1000
 
-CMD ["node", "server.js"]
+CMD ["python", "-m", "src.server"]
