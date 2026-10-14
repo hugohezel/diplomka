@@ -13,7 +13,7 @@ if __name__ == "__main__" and not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     __package__ = "src"
 
-from .adapters import dryad_adapter, figshare_adapter, zenodo_adapter
+from .adapters import dryad_adapter, figshare_adapter, pdb_adapter, zenodo_adapter
 from .utils.references import DOI_HOSTS, extract_doi, resolve_doi
 
 
@@ -21,7 +21,7 @@ HOST = "0.0.0.0"
 PORT = 8080
 MAX_REQUEST_BODY_SIZE = 64 * 1024
 HTML_PAGE = Path(__file__).with_name("index.html").read_text(encoding="utf-8")
-ADAPTERS = (zenodo_adapter, dryad_adapter, figshare_adapter)
+ADAPTERS = (zenodo_adapter, dryad_adapter, figshare_adapter, pdb_adapter)
 SERVICE_NAMES = {
     host: adapter.DISPLAY_NAME for adapter in ADAPTERS for host in adapter.HOSTS
 }
@@ -46,8 +46,8 @@ def evaluate_reference(reference: str) -> dict[str, Any]:
 
     if adapter is None:
         raise ClientInputError(
-            "Supported records are Zenodo, Dryad and Figshare. "
-            "Provide DOI or record URL."
+            "Supported records are Zenodo, Dryad, Figshare and RCSB PDB. "
+            "Provide DOI, record URL or PDB accession."
         )
     return adapter.fetch(reference)
 
@@ -68,7 +68,7 @@ class Handler(BaseHTTPRequestHandler):
             body = self._read_json_body()
             reference = body.get("reference")
             if not isinstance(reference, str) or not reference.strip():
-                raise ClientInputError("Enter a DOI or record URL.")
+                raise ClientInputError("Enter a DOI, record URL or PDB accession.")
 
             self._send_json(200, evaluate_reference(reference.strip()))
         except ClientInputError as error:

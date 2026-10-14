@@ -2,11 +2,14 @@
 
 import re
 from collections.abc import Mapping
+from functools import partial
 from typing import Any
 from urllib.parse import unquote
 
 from ..clients.repository_client import fetch_and_evaluate
-from ..utils.checks import Rule, evaluate_rules
+from ..utils.checks import Rule
+from ..utils.generic_metadata_checks import evaluate_generic_metadata
+from ..utils.generic_metadata_model import EvaluationContext
 from ..utils.references import extract_doi, parse_url
 
 
@@ -20,8 +23,7 @@ _RECORD_ID = re.compile(r"[1-9][0-9]*")
 _ZENODO_DOI = re.compile(r"10\.5281/zenodo\.([1-9][0-9]*)", re.IGNORECASE)
 _RECORD_PATH = re.compile(r"/(?:records?|api/records)/([1-9][0-9]*)/?")
 
-# These are completeness recommendations, not Zenodo publication requirements.
-# All rules apply to every record, assuming users select scientific datasets.
+# Original field catalog; G01–G10 evaluate search tasks separately from this policy catalog.
 # Paths refer directly to GET /api/records/{id}; there is no normalized record.
 # Sources: https://developers.zenodo.org/#records
 #          https://developers.zenodo.org/#deposit-metadata
@@ -85,12 +87,24 @@ def can_handle(reference: str) -> bool:
     return extract_record_id(reference) is not None
 
 
-def evaluate(repository_response: Mapping[str, Any]) -> list[dict[str, Any]]:
+def evaluate(
+    repository_response: Mapping[str, Any], *, reference: str | None = None,
+    source_url: str | None = None,
+) -> list[dict[str, Any]]:
     metadata = repository_response.get("metadata")
     if not isinstance(metadata, Mapping):
         raise ValueError("Zenodo response does not contain metadata object.")
 
-    return evaluate_rules(repository_response, RULES)
+    expected_id = extract_record_id(reference) if reference else None
+    expected_identifier = extract_doi(reference) if reference else None
+    url = parse_url(reference) if reference else None
+    if url and url.hostname in HOSTS and unquote(url.path).startswith("/doi/"):
+        expected_identifier = extract_doi(unquote(url.path).removeprefix("/doi/"))
+    context = EvaluationContext(
+        reference=reference, expected_record_id=expected_id, source_url=source_url,
+        expected_identifier=expected_identifier,
+    )
+    return evaluate_generic_metadata(repository_response, REPOSITORY, context=context)
 
 
 def fetch(reference: str) -> dict[str, Any]:
@@ -98,11 +112,13 @@ def fetch(reference: str) -> dict[str, Any]:
     if record_id is None:
         raise ValueError("Invalid Zenodo reference.")
 
+    source_url = f"{API_BASE_URL}/{record_id}"
     return fetch_and_evaluate(
         repository=REPOSITORY,
         display_name=DISPLAY_NAME,
-        source_url=f"{API_BASE_URL}/{record_id}",
+        source_url=source_url,
         reference=reference,
         doi_field=DOI_FIELD,
-        evaluator=evaluate,
+        evaluator=partial(evaluate, reference=reference, source_url=source_url),
+        rules=RULES,
     )

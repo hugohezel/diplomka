@@ -1,0 +1,535 @@
+{
+  "audit_author": [
+    {
+      "name": "Bibow, S.",
+      "pdbx_ordinal": 1
+    },
+    {
+      "name": "Polyhach, Y.",
+      "pdbx_ordinal": 2
+    },
+    {
+      "name": "Eichmann, C.",
+      "pdbx_ordinal": 3
+    },
+    {
+      "name": "Chi, C.N.",
+      "pdbx_ordinal": 4
+    },
+    {
+      "name": "Kowal, J.",
+      "pdbx_ordinal": 5
+    },
+    {
+      "name": "Stahlberg, H.",
+      "pdbx_ordinal": 6
+    },
+    {
+      "name": "Jeschke, G.",
+      "pdbx_ordinal": 7
+    },
+    {
+      "name": "Guentert, P.",
+      "pdbx_ordinal": 8
+    },
+    {
+      "name": "Riek, R.",
+      "pdbx_ordinal": 9
+    }
+  ],
+  "citation": [
+    {
+      "country": "US",
+      "id": "primary",
+      "journal_abbrev": "Nat.Struct.Mol.Biol.",
+      "journal_id_ISSN": "1545-9993",
+      "journal_volume": "24",
+      "page_first": "187",
+      "page_last": "193",
+      "pdbx_database_id_DOI": "10.1038/nsmb.3345",
+      "pdbx_database_id_PubMed": 28024148,
+      "rcsb_authors": [
+        "Bibow, S.",
+        "Polyhach, Y.",
+        "Eichmann, C.",
+        "Chi, C.N.",
+        "Kowal, J.",
+        "Albiez, S.",
+        "McLeod, R.A.",
+        "Stahlberg, H.",
+        "Jeschke, G.",
+        "Guntert, P.",
+        "Riek, R."
+      ],
+      "rcsb_is_primary": "Y",
+      "rcsb_journal_abbrev": "Nat Struct Mol Biol",
+      "title": "Solution structure of discoidal high-density lipoprotein particles with a shortened apolipoprotein A-I.",
+      "year": 2017
+    }
+  ],
+  "database_2": [
+    {
+      "database_code": "RCSB104443",
+      "database_id": "RCSB"
+    },
+    {
+      "database_code": "2N5E",
+      "database_id": "PDB",
+      "pdbx_DOI": "10.2210/pdb2n5e/pdb",
+      "pdbx_database_accession": "pdb_00002n5e"
+    },
+    {
+      "database_code": "25710",
+      "database_id": "BMRB",
+      "pdbx_DOI": "10.13018/BMR25710"
+    },
+    {
+      "database_code": "D_1000104443",
+      "database_id": "WWPDB"
+    }
+  ],
+  "entry": {
+    "id": "2N5E"
+  },
+  "exptl": [
+    {
+      "method": "SOLUTION NMR"
+    }
+  ],
+  "pdbx_audit_revision_category": [
+    {
+      "category": "chem_comp_atom",
+      "data_content_type": "Structure model",
+      "ordinal": 1,
+      "revision_ordinal": 4
+    },
+    {
+      "category": "chem_comp_bond",
+      "data_content_type": "Structure model",
+      "ordinal": 2,
+      "revision_ordinal": 4
+    },
+    {
+      "category": "database_2",
+      "data_content_type": "Structure model",
+      "ordinal": 3,
+      "revision_ordinal": 4
+    },
+    {
+      "category": "pdbx_nmr_software",
+      "data_content_type": "Structure model",
+      "ordinal": 4,
+      "revision_ordinal": 4
+    },
+    {
+      "category": "pdbx_nmr_spectrometer",
+      "data_content_type": "Structure model",
+      "ordinal": 5,
+      "revision_ordinal": 4
+    },
+    {
+      "category": "struct_ref_seq_dif",
+      "data_content_type": "Structure model",
+      "ordinal": 6,
+      "revision_ordinal": 4
+    }
+  ],
+  "pdbx_audit_revision_details": [
+    {
+      "data_content_type": "Structure model",
+      "ordinal": 1,
+      "provider": "repository",
+      "revision_ordinal": 1,
+      "type": "Initial release"
+    }
+  ],
+  "pdbx_audit_revision_group": [
+    {
+      "data_content_type": "Structure model",
+      "group": "Database references",
+      "ordinal": 1,
+      "revision_ordinal": 2
+    },
+    {
+      "data_content_type": "Structure model",
+      "group": "Database references",
+      "ordinal": 2,
+      "revision_ordinal": 3
+    },
+    {
+      "data_content_type": "Structure model",
+      "group": "Data collection",
+      "ordinal": 3,
+      "revision_ordinal": 4
+    },
+    {
+      "data_content_type": "Structure model",
+      "group": "Database references",
+      "ordinal": 4,
+      "revision_ordinal": 4
+    }
+  ],
+  "pdbx_audit_revision_history": [
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 0,
+      "ordinal": 1,
+      "revision_date": "2016-12-21T00:00:00.000+00:00"
+    },
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 1,
+      "ordinal": 2,
+      "revision_date": "2017-01-11T00:00:00.000+00:00"
+    },
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 2,
+      "ordinal": 3,
+      "revision_date": "2017-02-22T00:00:00.000+00:00"
+    },
+    {
+      "data_content_type": "Structure model",
+      "major_revision": 1,
+      "minor_revision": 3,
+      "ordinal": 4,
+      "revision_date": "2024-05-01T00:00:00.000+00:00"
+    }
+  ],
+  "pdbx_audit_revision_item": [
+    {
+      "data_content_type": "Structure model",
+      "item": "_database_2.pdbx_DOI",
+      "ordinal": 1,
+      "revision_ordinal": 4
+    },
+    {
+      "data_content_type": "Structure model",
+      "item": "_database_2.pdbx_database_accession",
+      "ordinal": 2,
+      "revision_ordinal": 4
+    },
+    {
+      "data_content_type": "Structure model",
+      "item": "_pdbx_nmr_software.name",
+      "ordinal": 3,
+      "revision_ordinal": 4
+    },
+    {
+      "data_content_type": "Structure model",
+      "item": "_pdbx_nmr_spectrometer.model",
+      "ordinal": 4,
+      "revision_ordinal": 4
+    },
+    {
+      "data_content_type": "Structure model",
+      "item": "_struct_ref_seq_dif.details",
+      "ordinal": 5,
+      "revision_ordinal": 4
+    }
+  ],
+  "pdbx_database_related": [
+    {
+      "content_type": "unspecified",
+      "db_id": "25710",
+      "db_name": "BMRB"
+    }
+  ],
+  "pdbx_database_status": {
+    "deposit_site": "BMRB",
+    "pdb_format_compatible": "Y",
+    "process_site": "RCSB",
+    "recvd_initial_deposition_date": "2015-07-15T00:00:00.000+00:00",
+    "status_code": "REL",
+    "status_code_cs": "REL",
+    "status_code_mr": "REL"
+  },
+  "pdbx_nmr_ensemble": {
+    "conformer_selection_criteria": "target function",
+    "conformers_calculated_total_number": 100,
+    "conformers_submitted_total_number": 10
+  },
+  "pdbx_nmr_exptl": [
+    {
+      "conditions_id": "1",
+      "experiment_id": "1",
+      "solution_id": "1",
+      "type": "2D 1H-15N HSQC"
+    },
+    {
+      "conditions_id": "1",
+      "experiment_id": "2",
+      "solution_id": "1",
+      "type": "3D HNCO"
+    },
+    {
+      "conditions_id": "1",
+      "experiment_id": "3",
+      "solution_id": "1",
+      "type": "3D HNCA"
+    },
+    {
+      "conditions_id": "1",
+      "experiment_id": "4",
+      "solution_id": "1",
+      "type": "3D HNCACB"
+    },
+    {
+      "conditions_id": "1",
+      "experiment_id": "5",
+      "solution_id": "1",
+      "type": "3D 1H-15N NOESY"
+    },
+    {
+      "conditions_id": "1",
+      "experiment_id": "6",
+      "solution_id": "1",
+      "type": "2D 1H-13C HSQC"
+    }
+  ],
+  "pdbx_nmr_exptl_sample_conditions": [
+    {
+      "conditions_id": "1",
+      "ionic_strength": "100",
+      "pH": "7.4",
+      "pressure": "ambient",
+      "temperature": "316",
+      "temperature_units": "K"
+    }
+  ],
+  "pdbx_nmr_refine": [
+    {
+      "method": "simulated annealing",
+      "software_ordinal": 1
+    }
+  ],
+  "pdbx_nmr_representative": {
+    "conformer_id": "1",
+    "selection_criteria": "lowest energy"
+  },
+  "pdbx_nmr_sample_details": [
+    {
+      "contents": "0.5-1.0 mM [U-99% 13C; U-99% 15N] H2O, 1 mM stereospecific Methyl-labeling H2O, 1 mM selective unlabeling H2O, 90% H2O/10% D2O",
+      "solution_id": "1",
+      "solvent_system": "90% H2O/10% D2O"
+    }
+  ],
+  "pdbx_nmr_software": [
+    {
+      "authors": "Goddard",
+      "classification": "chemical shift assignment",
+      "name": "Sparky",
+      "ordinal": 1
+    },
+    {
+      "authors": "Guntert, Braun and Wuthrich",
+      "classification": "structure solution",
+      "name": "CYANA",
+      "ordinal": 2,
+      "version": "3.97"
+    },
+    {
+      "authors": "Guntert, Braun and Wuthrich",
+      "classification": "refinement",
+      "name": "CYANA",
+      "ordinal": 3,
+      "version": "3.97"
+    }
+  ],
+  "pdbx_nmr_spectrometer": [
+    {
+      "field_strength": 900.0,
+      "manufacturer": "Bruker",
+      "model": "AVANCE",
+      "spectrometer_id": "1",
+      "type": "Bruker Avance"
+    },
+    {
+      "field_strength": 700.0,
+      "manufacturer": "Bruker",
+      "model": "AVANCE",
+      "spectrometer_id": "2",
+      "type": "Bruker Avance"
+    },
+    {
+      "field_strength": 600.0,
+      "manufacturer": "Bruker",
+      "model": "AVANCE",
+      "spectrometer_id": "3",
+      "type": "Bruker Avance"
+    }
+  ],
+  "pdbx_vrpt_summary": {
+    "attempted_validation_steps": "molprobity,validation-pack,coreclust,chemicalshiftanalysis,validation_schema,percentiles,writepdf,writexml,writecif",
+    "ligands_for_buster_report": "N",
+    "report_creation_date": "2026-03-05T15:12:00.000+00:00"
+  },
+  "pdbx_vrpt_summary_geometry": [
+    {
+      "angles_RMSZ": 0.61,
+      "bonds_RMSZ": 0.25,
+      "clashscore": 8.77,
+      "clashscore_full_length": 8.37,
+      "num_H_reduce": 27260,
+      "num_angles_RMSZ": 37380,
+      "num_bonds_RMSZ": 27820,
+      "percent_ramachandran_outliers": 0.07,
+      "percent_ramachandran_outliers_full_length": 0.36,
+      "percent_rotamer_outliers": 28.93,
+      "percent_rotamer_outliers_full_length": 28.6
+    }
+  ],
+  "pdbx_vrpt_summary_nmr": [
+    {
+      "chemical_shift_completeness": 14.59,
+      "chemical_shift_completeness_full_length": 14.54,
+      "cyrange_number_of_domains": 1,
+      "exp_method": "nmr",
+      "medoid_model": 1,
+      "nmr_models_consistency_flag": "True",
+      "nmrclust_number_of_clusters": 2,
+      "nmrclust_number_of_models": 10,
+      "nmrclust_number_of_outliers": 1,
+      "nmrclust_representative_model": 7
+    }
+  ],
+  "rcsb_accession_info": {
+    "deposit_date": "2015-07-15T00:00:00.000+00:00",
+    "has_released_experimental_data": "Y",
+    "initial_release_date": "2016-12-21T00:00:00.000+00:00",
+    "major_revision": 1,
+    "minor_revision": 3,
+    "revision_date": "2024-05-01T00:00:00.000+00:00",
+    "status_code": "REL"
+  },
+  "rcsb_entry_container_identifiers": {
+    "assembly_ids": [
+      "1"
+    ],
+    "entity_ids": [
+      "1"
+    ],
+    "entry_id": "2N5E",
+    "model_ids": [
+      1,
+      10,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "polymer_entity_ids": [
+      "1"
+    ],
+    "pubmed_id": 28024148,
+    "rcsb_id": "2N5E"
+  },
+  "rcsb_entry_info": {
+    "assembly_count": 1,
+    "branched_entity_count": 0,
+    "cis_peptide_count": 0,
+    "deposited_atom_count": 2736,
+    "deposited_branched_entity_instance_count": 0,
+    "deposited_deuterated_water_count": 0,
+    "deposited_hydrogen_atom_count": 2728,
+    "deposited_model_count": 10,
+    "deposited_modeled_polymer_monomer_count": 334,
+    "deposited_nonpolymer_entity_instance_count": 0,
+    "deposited_polymer_entity_instance_count": 2,
+    "deposited_polymer_monomer_count": 334,
+    "deposited_solvent_atom_count": 0,
+    "deposited_unmodeled_polymer_monomer_count": 0,
+    "disulfide_bond_count": 0,
+    "entity_count": 1,
+    "experimental_method": "NMR",
+    "experimental_method_count": 1,
+    "inter_mol_covalent_bond_count": 0,
+    "inter_mol_metalic_bond_count": 0,
+    "molecular_weight": 38.92,
+    "na_polymer_entity_types": "Other",
+    "nonpolymer_entity_count": 0,
+    "polymer_composition": "homomeric protein",
+    "polymer_entity_count": 1,
+    "polymer_entity_count_DNA": 0,
+    "polymer_entity_count_RNA": 0,
+    "polymer_entity_count_nucleic_acid": 0,
+    "polymer_entity_count_nucleic_acid_hybrid": 0,
+    "polymer_entity_count_protein": 1,
+    "polymer_entity_taxonomy_count": 1,
+    "polymer_molecular_weight_maximum": 19.46,
+    "polymer_molecular_weight_minimum": 19.46,
+    "polymer_monomer_count_maximum": 167,
+    "polymer_monomer_count_minimum": 167,
+    "selected_polymer_entity_types": "Protein (only)",
+    "software_programs_combined": [
+      "CYANA",
+      "SPARKY"
+    ],
+    "solvent_entity_count": 0,
+    "structure_determination_methodology": "experimental",
+    "structure_determination_methodology_priority": 10
+  },
+  "rcsb_external_references": [
+    {
+      "id": "25710",
+      "link": "https://bmrb.io/data_library/generate_summary.php?bmrbId=25710",
+      "type": "BMRB"
+    }
+  ],
+  "rcsb_primary_citation": {
+    "country": "US",
+    "id": "primary",
+    "journal_abbrev": "Nat.Struct.Mol.Biol.",
+    "journal_id_ISSN": "1545-9993",
+    "journal_volume": "24",
+    "page_first": "187",
+    "page_last": "193",
+    "pdbx_database_id_DOI": "10.1038/nsmb.3345",
+    "pdbx_database_id_PubMed": 28024148,
+    "rcsb_ORCID_identifiers": [
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?"
+    ],
+    "rcsb_authors": [
+      "Bibow, S.",
+      "Polyhach, Y.",
+      "Eichmann, C.",
+      "Chi, C.N.",
+      "Kowal, J.",
+      "Albiez, S.",
+      "McLeod, R.A.",
+      "Stahlberg, H.",
+      "Jeschke, G.",
+      "Guntert, P.",
+      "Riek, R."
+    ],
+    "rcsb_journal_abbrev": "Nat Struct Mol Biol",
+    "title": "Solution structure of discoidal high-density lipoprotein particles with a shortened apolipoprotein A-I.",
+    "year": 2017
+  },
+  "struct": {
+    "pdbx_model_details": "lowest energy, model1",
+    "title": "The 3D solution structure of discoidal high-density lipoprotein particles"
+  },
+  "struct_keywords": {
+    "pdbx_keywords": "LIPID BINDING PROTEIN",
+    "text": "nanodisc, HDL, lipoproteins, cardiovascular disease, LIPID BINDING PROTEIN"
+  },
+  "rcsb_id": "2N5E"
+}

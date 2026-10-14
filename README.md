@@ -17,14 +17,15 @@ Open [localhost:8080](http://localhost:8080). Stop the server with `Ctrl+C`.
 
 ## Evaluation
 
-The app is intended for scientific datasets. Enter a DOI or record URL and click **Check**.
-The app recognizes Zenodo, Dryad or Figshare and retrieves the record's metadata.
-It checks selected fields for missing values and looks up the DOI in OpenAIRE and OpenAlex.
+The app is intended for scientific datasets. Enter a DOI, record URL or PDB accession and click **Check**.
+The app recognizes Zenodo, Dryad, Figshare or RCSB PDB and retrieves the record's metadata.
+It evaluates all four repositories in G01–G10 search-readiness groups and looks
+up the data-object DOI in OpenAIRE and OpenAlex.
 
 Results contain three groups:
 
-- **Record-level:** metadata completeness checks.
-- **Repository-level:** reserved for future checks; currently empty.
+- **Record-level:** G01–G10 criteria and capability summaries for all four repositories. Each group expands on click to show its concrete checks, native fields, decision rules and schema sources.
+- **Repository-level:** documented submission requirements and automatic filling for each field in the selected adapter's catalog.
 - **Aggregators:** DOI lookups in OpenAIRE and OpenAlex.
 
 **Input recognition and DOI resolution**
@@ -41,29 +42,94 @@ Results contain three groups:
 Supported domains also accept URLs without `https://`.
 HTTP and HTTPS are accepted with their default ports. URLs containing credentials are rejected.
 URL paths are decoded before matching. Query strings and fragments do not select a different record or version.
+The wwPDB `/pdb` landing page is an exception: exactly one `id` query parameter selects its entry.
 DOIs embedded in prose are not extracted.
 Bare positive integer IDs without leading zeros select Zenodo.
 
-**How metadata checks work**
+**Generic metadata checks: G01–G10**
 
-Each row in a metadata table is one presence check. Paths refer to the original JSON response.
-`[]` means every item in a list. Fields marked **HTML** are checked using their parsed text.
+All four repositories use the `public_repository_api` profile based on the
+`design-search-readiness-checks` skill and the supplied search-readiness proposal.
+Repository-specific rules and sources were reviewed on 14 October 2026; see
+[the concrete check specification](docs/search-readiness-checks.md).
+Generic adapters evaluate one original public API representation. PDB also
+retrieves the polymer entities explicitly linked by the entry. Paths refer to
+their stated native representation;
+`[]` in repository catalogs projects a field from every list item.
 
-- A missing field, `null`, blank text, an empty list or an empty object produces `FAIL`.
-- A list must contain items, and every checked item must have a value.
-  One author without an ORCID therefore fails the entire author ORCID check.
-- An object must contain at least one nonempty value.
-- HTML without text, such as `<p>&nbsp;</p>`, produces `FAIL` in HTML fields.
-- `0` and `false` count as present values.
+| Group | Task and implemented criteria |
+| --- | --- |
+| G01 Identity | Repository-qualified or recognized dataset ID; binding to the requested object; selected-version consistency; optional resolver diagnostic. Series and version references are distinguished. |
+| G02 Name | Nonempty text and recognized literal placeholders; identifying meaning remains a separate semantic result. |
+| G03 Summary | Text after HTML parsing; data focus and distinguishing information separately. An exact title copy fails the additional-information test. |
+| G04 Terms | Keywords and subjects together; thematic access keys, relevance, duplicate diagnostics, concept membership and label alignment separately. Free keywords do not require a controlled vocabulary. |
+| G05 Data kind | Extensible content crosswalk for native resource types. `Dataset`, CSV, PDF and ZIP alone do not establish scientific data kind. |
+| G06 Origin | Every declared creator is named, preserving its role. Contributors, publishers and hosts remain distinct. Supplied ORCID/ROR identifiers have optional diagnostics; no universal affiliation or identifier bonus. |
+| G07 Scope | Independent entity, property, spatial, content-time and granularity results. Mapped locations and collection intervals are validated without substituting publication dates. Textual interpretation and filter readiness are separate. |
+| G08 Generation | Method text with its source; naming a process and binding it to these data requires semantic evidence. “Methods available” alone fails. |
+| G09 Relations | Every declared target and relation type/direction separately; actual relationship meaning remains unverified. A missing related article is not an automatic failure. |
+| G10 Publication | Successful retrieval of the same API representation, useful native parser mappings and object binding. Independent discovery, web crawling and observed indexing are not inferred from an API request. |
 
-Missing optional fields also produce `FAIL`.
-These checks measure completeness only. They do not validate metadata schemas, identifier formats or research quality.
-Repository request failures appear as loading errors; they do not produce metadata check results.
+Each subtest reports `group`, a descriptive `testId`, `ruleVersion`, `profile`,
+`targetObject`, `sourceRepresentation`, evidence, `decisionMethod`, `applicable`
+and `applicabilityReason`. The application displays the individual results and a
+conservative summary for every group: all active required criteria must pass;
+a demonstrated failure takes precedence; otherwise the group is `UNSURE`.
+Diagnostics do not earn additional points or overwrite a semantic result.
+
+- `PASS`: evidence satisfies the named criterion.
+- `FAIL`: the sufficiently retrieved representation demonstrates a failure.
+- `UNSURE`: evidence, semantic interpretation or applicability is unknown.
+- `NOT_APPLICABLE`: an explicit task selection excludes the criterion, with a reason.
+
+The reference profile activates identity, name, summary, data kind, creator and
+API-publication tasks. It examines declared terms, scope, methods and relations;
+when these are absent and their applicability is unknown, it reports `UNSURE`.
+The internal `EvaluationContext.scope_dimensions` can explicitly select scope
+tasks (`E`, `P`, `S`, `T`, `G`). Missing values for active mapped dimensions fail
+only with a complete representation. Unmapped dimensions and incomplete harvests
+remain uncertain. Missing fields alone never justify `NOT_APPLICABLE`.
+
+No NLP/LLM or uncalibrated semantic heuristic produces a semantic `PASS`.
+Name informativeness, description data focus, term relevance, method meaning and
+relation meaning therefore usually remain `UNSURE`, with the available text or
+assignment retained for review. There are no word-count, keyword-count, recency,
+reputation or dataset-size thresholds. Unmapped scope information in descriptions
+also remains uncertain; arbitrary custom fields are not given an invented crosswalk.
+
+Generic results have zero `points/maxPoints` for compatibility with result helpers;
+their summary contains `profile` and `groups` instead of a universal score or bonus.
+Status counts include diagnostics and aggregator results and are not a probability
+of dataset discovery. Language, grants, lifecycle dates, download success and
+licensing are not universal search-readiness criteria. The original field catalogs
+remain available in the separate repository-policy table.
+
+Resolver and registry verification uses bounded public HTTP(S) requests, at most
+five redirects, eight workers and eight-second timeouts. Distinct URLs are fetched
+once. Resolver evidence retains the redirect chain, final target and check time.
+HTTP success at a generic homepage does not establish dataset/version binding;
+resolver outages leave local identifier interpretation intact. Controlled-concept
+existence, label alignment and relevance have separate results. Supplied creator
+ORCIDs retain the previous per-author surname consistency diagnostic; a surname
+match does not authenticate ownership.
+
+**PDB evaluation**
+
+PDB uses G01–G10 with namespaced accession and structure-DOI binding, linked
+molecular summaries, topical classification, atomic-model content, structure
+authors, polymer names, biological source organisms, canonical sequences,
+entity/chain/model granularity, method-dependent resolution and primary-citation
+relations. Every declared polymer is checked; unavailable entity metadata stay
+UNSURE. Publication authors, expression hosts and lifecycle dates do not replace
+structure authors, source organisms or data coverage. The current-entry profile
+excludes geographic and calendar-time queries with explicit NOT_APPLICABLE reasons.
+No legacy points or bonuses are assigned to this profile.
 
 **Submission requirements**
 
 The **Required from submitter?** column describes publication requirements for the standard repository forms.
-The requirements were checked against the linked documentation on 9 September 2026.
+The requirements were checked against the linked documentation on 1 October 2026
+for generic repositories and 2 October 2026 for PDB.
 
 - **Yes:** the value or selection is required; a supplied default may satisfy it.
 - **No:** optional, even when recommended by the repository.
@@ -71,9 +137,39 @@ The requirements were checked against the linked documentation on 9 September 20
 - **Automatic:** supplied by the repository or a selected registry entry; no separate manual value is required.
 - **Depends on form:** the requirement differs between documented form versions.
 
-These labels do not change the app's presence checks.
+These labels describe repository policy and do not change record evaluation or scoring.
 The tables cover the checked metadata only, not the complete submission checklist.
 Required properties in an API response schema do not necessarily require input from the scientist.
+
+**Repository-level checks**
+
+Each evaluation includes a policy table for the recognized repository: 30 Zenodo,
+23 Dryad, 22 Figshare or 16 PDB fields, matching the adapter's catalog. The table
+shows the submission requirement, automatic filling, explanation, source links,
+scope and review date. Policies are stored locally and do not require extra
+network requests. They stay the same regardless of the values in a particular record.
+
+Requirements and automatic filling are separate. For example, Zenodo requires a
+publication date and prefills it. Dryad requires author affiliations, but only a
+ROR selection supplies an affiliation identifier. Importing publication metadata
+or selecting an author, subject or grant still needs user action.
+
+- **PASS:** the standard workflow requires the field or supplies it automatically.
+  This describes completeness safeguards, not the accuracy of the resulting value.
+- **WARNING:** a field is optional, required only in some situations, or filled only
+  after an optional selection. The repository does not ensure it for every submission.
+- **UNSURE:** the form's requirements vary or the field policy has not been verified.
+  Figshare categories retain both conflicting official guides as evidence.
+
+Defaults in optional sections (such as Figshare related materials) do not ensure
+that the section is present. Dryad's ORCID login requirement does not require
+every coauthor to have an ORCID. A missing policy for a newly added catalog field
+produces an explicit unverified result instead of omitting the field.
+
+Repository policy results have no points. The main summary's scores and status
+counts include record checks and aggregator lookups only, so optional repository
+fields cannot inflate a record's failures or warnings. Repository checks cover
+the catalog fields, not the complete submission checklist or all derived evaluation paths.
 
 ### Zenodo
 
@@ -104,10 +200,10 @@ GET https://zenodo.org/api/records/{id}
 
 The adapter requests JSON and evaluates the returned record directly.
 
-**Metadata checks: 30 for every record**
+**Metadata field catalog**
 
-All checks run regardless of the declared resource type.
-The resource type check only requires a nonempty value.
+G01 uses the native resource type as object-role evidence; G05 separately checks
+the scientific data kind. A declared `Dataset` type is insufficient for G05.
 
 | Metadata | JSON field | Required from submitter? |
 | --- | --- | --- |
@@ -188,7 +284,7 @@ The DOI is lowercased, prefixed with `doi:` and URL-encoded as one path segment.
 For the example above, `{encoded_doi}` is `doi%3A10.5061%2Fdryad.7d7wm37sz`.
 The adapter evaluates the dataset JSON returned by this endpoint.
 
-**Metadata checks: 23**
+**Metadata field catalog**
 
 | Metadata | JSON field | Required from submitter? |
 | --- | --- | --- |
@@ -205,12 +301,12 @@ The adapter evaluates the dataset JSON returned by this endpoint.
 | Field of science | `fieldOfScience` | Yes — select at least one research domain. |
 | Version | `versionNumber` | Automatic — managed by Dryad. |
 | Related work identifiers | `relatedWorks[].identifier` | Conditional — when linking a related work or an associated published article. |
-| Related work relationships | `relatedWorks[].relationship` | Conditional — choose the work type when adding a related work. |
+| Related work relationships | `relatedWorks[].relationship` | Conditional — choosing the work type supplies the relationship automatically. |
 | Related work identifier schemes | `relatedWorks[].identifierType` | Automatic from the DOI or URL entered in the form. |
 | Funder organizations | `funders[].organization` | Conditional — when adding funding. |
 | Funder identifiers | `funders[].identifier` | Automatic when a registered funder is selected. |
 | Funder identifier schemes | `funders[].identifierType` | Automatic from the selected funder identifier. |
-| Grant numbers | `funders[].awardNumber` | No — recommended when applicable. |
+| Grant numbers | `funders[].awardNumber` | No — recommended; award lookup can supply the number for supported funders. |
 | Grant descriptions | `funders[].awardDescription` | No. |
 | Methods (HTML) | `methods` | No — recommended. |
 | Usage notes (HTML) | `usageNotes` | No — legacy field; guidance belongs in the dataset README. |
@@ -222,8 +318,9 @@ It does not require an ORCID for every coauthor, although the app checks every a
 Funding is optional; the [funding form](https://datadryad.org/help/submission_steps/description#support) requires an organization name for each entry.
 Dryad manages [DOI assignment, publication and versions](https://datadryad.org/help/guides/publication).
 
-Affiliation checks use `affiliation` and `affiliationROR`.
-The alternative `affiliations[]` representation is not checked separately.
+G06 retains `affiliation`, `affiliationROR`, `affiliationISNI` and structured
+`affiliations[]` as origin evidence and verifies supplied ROR identifiers separately.
+These optional affiliation identifiers do not replace the creator role.
 
 ### Figshare
 
@@ -265,7 +362,7 @@ A version in the DOI or URL selects that exact version:
 GET https://api.figshare.com/v2/articles/{id}/versions/{version}
 ```
 
-**Metadata checks: 22**
+**Metadata field catalog**
 
 | Metadata | JSON field | Required from submitter? |
 | --- | --- | --- |
@@ -302,6 +399,84 @@ Selecting a grant supplies its details; custom funding can contain only a title.
 The response schema's required grant properties do not make grant codes or funder names mandatory author inputs.
 
 Keyword checks use `keywords`. The `tags` alias is not checked separately.
+
+### RCSB PDB
+
+PDB is a specialized archive of macromolecular structures, including proteins,
+nucleic acids and their complexes. This adapter evaluates the current public
+**entry**, using the native RCSB REST response. It does not retrieve polymer
+entities, chains, assemblies, coordinates or full validation reports.
+
+- [Data API and hierarchy](https://data.rcsb.org/) — entry and entity endpoints.
+- [PDB accession and DOI formats](https://www.wwpdb.org/documentation/new-format-for-pdb-ids).
+- [OneDep submission requirements](https://www.wwpdb.org/deposition/faq).
+- [Versioned archive](https://www.wwpdb.org/ftp/pdb-versioned-ftp-site).
+- [Framework assessment and live examples](docs/pdb-framework-assessment.md).
+
+**Accepted inputs**
+
+| Input | Example |
+| --- | --- |
+| PDB accession, case insensitive | `4HHB` or `pdb:4HHB` |
+| Extended legacy alias | `pdb_00004hhb` (requests `4HHB`) |
+| New extended accession syntax | `pdb_1000axyz` |
+| Structure DOI | `10.2210/pdb4hhb/pdb` |
+| Extended DOI syntax | `10.2210/pdb_1000axyz/pdb` |
+| RCSB structure URL | `https://www.rcsb.org/structure/4HHB` |
+| Entry API URL | `https://data.rcsb.org/rest/v1/core/entry/4HHB` |
+| wwPDB DOI landing page | `https://www.wwpdb.org/pdb?id=pdb_00004hhb` |
+
+Extended identifiers are parsed without assuming that an example exists in the
+live archive. Legacy aliases normalize to the API's four-character identifier;
+new extended identifiers retain all 12 characters. Bare numeric input continues
+to select Zenodo; use `pdb:1234` for an all-numeric PDB accession. Computed model
+IDs such as `AF_...`, deposition sessions `D_...`, entity/chain URLs and archive
+version-file URLs are not supported entry references.
+
+**Metadata source**
+
+```http
+GET https://data.rcsb.org/rest/v1/core/entry/{pdb_id}
+GET https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/{entity_id}
+```
+
+The structure DOI, related article DOI and other database DOIs are kept distinct.
+Only the structure DOI selected from the PDB row is sent to aggregators. If it is
+missing, the input DOI or article DOI does not fill it. A response identifying a
+different entry, or a valid DOI in the PDB row identifying another resource,
+fails the G01 binding check. Related polymer responses are separately bound by
+entry and entity identifiers. Related-source retrieval failures remain UNSURE.
+
+**Metadata field catalog**
+
+| Metadata | JSON field | Required from submitter? |
+| --- | --- | --- |
+| PDB accession | `rcsb_id` | Automatic. |
+| Structure DOI | `database_2[].pdbx_DOI` (PDB row) | Automatic. |
+| Structure title | `struct.title` | Yes. |
+| Keywords | `struct_keywords.text` | Yes. |
+| Controlled classification | `struct_keywords.pdbx_keywords` | Yes — deposition vocabulary. |
+| Structure authors | `audit_author[].name` | Yes. |
+| Author ORCIDs | `audit_author[].pdbx_ORCID` | Conditional — contact authors; not ensured for every entry author. |
+| Processing organization | `pdbx_database_status.process_site` | Automatic. |
+| Deposition date | `rcsb_accession_info.deposit_date` | Automatic. |
+| Initial release date | `rcsb_accession_info.initial_release_date` | Automatic. |
+| Latest revision date | `rcsb_accession_info.revision_date` | Automatic. |
+| Major revision | `rcsb_accession_info.major_revision` | Automatic. |
+| Minor revision | `rcsb_accession_info.minor_revision` | Automatic. |
+| Experimental methods | `exptl[].method` | Yes. |
+| Polymer entity links | `rcsb_entry_container_identifiers.polymer_entity_ids[]` | Automatic. |
+| Related article DOI | `rcsb_primary_citation.pdbx_database_id_DOI` | Conditional — when there is an associated publication. |
+
+G06 uses structure authors, not publication authors, and keeps the explicitly
+declared processing organization separate. G03 combines bound molecular labels
+with entry-level composition and method facts rather than requiring a separate
+abstract. G05 identifies atomic structural content independently of mmCIF format.
+G07 evaluates every declared polymer's name, source organisms, sequence and
+chain identifiers. Missing linked representations remain UNSURE; one fetched
+polymer cannot establish coverage of the others. Resolution is method-dependent:
+NMR-only records have an explicit NOT_APPLICABLE result for that criterion.
+Historical archive versions require a separate retrieval workflow.
 
 ## Aggregators
 
@@ -359,3 +534,38 @@ An aggregator error preserves the metadata checks and the other aggregator's res
 Errors are counted separately from failed checks.
 
 ## Implementation details and architecture
+
+Generic G01–G10 orchestration is in `generic_metadata_checks.py`, with native
+additional mappings in `generic_metadata_config.py`. `generic_metadata_model.py`
+provides the evidence context and result builder; identity/version binding and
+independent scope validation are isolated in `generic_metadata_identity.py` and
+`generic_metadata_scope.py`. `generic_metadata_summary.py` summarizes capabilities.
+Shared title/creator/term paths remain in `metadata_config.py`. Registry, creator
+and organization evidence is shared through `metadata_evidence.py`.
+
+PDB retains the M1–M9 evaluator in `metadata_checks.py`. Both profiles share
+identifier syntax in `metadata_identifiers.py`, date parsing in `metadata_dates.py`,
+verification in `metadata_verification.py` and text/result helpers in `checks.py`.
+
+Adapters evaluate the original repository JSON offline. `metadata_verification.py`
+then completes queued resolver and registry lookups, and the shared repository
+client computes the summary.
+PDB supplies native identifier targets to the shared M1 evaluator and an
+authoritative structure-DOI selector to the repository client. `pdb_identifiers.py`
+centralizes accession syntax; `pdb_vocabulary.py` stores the dated classification
+snapshot. No dependencies or second scoring implementation are introduced.
+
+`repository_policies.py` stores the sourced, dated submission policies separately
+from evaluation logic. `repository_checks.py` combines those policies with the
+selected adapter's existing field labels and paths. The repository client adds
+these results to `checks.repositoryLevel`; the UI renders a separate policy table.
+
+Run the behavioral regression suite from the `diplomka` directory:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+Tests mock external services and do not require internet access.
+PDB tests also use archived public X-ray and NMR entry responses in
+`tests/fixtures/pdb`; their sources and capture date are documented there.

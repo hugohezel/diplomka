@@ -33,10 +33,13 @@
     .check-pass { color: green; }
     .check-fail { color: #c00; }
     .check-error { color: #965b00; }
+    .check-warning { color: #965b00; }
+    .check-unsure { color: #666; }
+    .check-not_applicable { color: #666; }
 
     .panels {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
       gap: 20px;
       margin-top: 20px;
     }
@@ -51,6 +54,40 @@
     .check-section h3 { margin-bottom: 8px; }
     .check-section pre { min-height: 0; }
 
+    body { font-family: system-ui, sans-serif; color: #202734; background: #fafbfc; }
+    .panel { background: white; border: 1px solid #e2e6ed; border-radius: 8px; }
+    .check-group { margin: 10px 0; border: 1px solid #d9dfe8; border-radius: 8px; background: white; }
+    .check-group > summary {
+      display: flex; align-items: center; gap: 12px; padding: 16px;
+      cursor: pointer; list-style: none; font-weight: 600;
+    }
+    .check-group > summary::-webkit-details-marker { display: none; }
+    .check-group > summary::after { content: "▸"; margin-left: auto; }
+    .check-group[open] > summary::after { content: "▾"; }
+    .check-group > summary:hover { background: #f3f6fa; }
+    .check-group > summary:focus-visible { outline: 2px solid #3157a8; outline-offset: 2px; }
+    .group-count { color: #647084; font-size: 0.85rem; font-weight: 400; }
+    .group-checks { padding: 0 16px 16px; border-top: 1px solid #e2e6ed; }
+    .individual-check { padding: 14px 0; }
+    .individual-check + .individual-check { border-top: 1px solid #e8ebf0; }
+    .individual-check h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    .individual-check pre { margin: 0; max-height: none; font-size: 0.85rem; line-height: 1.55; }
+    .check-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+    .check-controls button { padding: 7px 12px; cursor: pointer; }
+
+    .repository-table-wrapper { max-height: 650px; overflow: auto; }
+    .repository-table { width: 100%; border-collapse: collapse; }
+    .repository-table th, .repository-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+      vertical-align: top;
+    }
+    .repository-table th { background: #f5f5f5; position: sticky; top: 0; }
+    .repository-table code { overflow-wrap: anywhere; }
+    .repository-table small { display: block; margin-top: 6px; }
+    .repository-table caption { text-align: left; margin-bottom: 10px; }
+
     pre {
       min-height: 120px;
       max-height: 650px;
@@ -62,7 +99,6 @@
 
     @media (max-width: 800px) {
       form { flex-direction: column; }
-      .panels { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -75,9 +111,9 @@
         id="record-reference"
         name="reference"
         type="text"
-        value="https://zenodo.org/records/3357455"
-        placeholder="DOI or URL from Zenodo, Dryad or Figshare"
-        aria-label="DOI or record URL"
+        value="https://doi.org/10.2210/pdb4hhb/pdb"
+        placeholder="https://doi.org/10.2210/pdb4hhb/pdb"
+        aria-label="DOI, record URL or PDB accession"
         autocomplete="off"
         required
       />
@@ -88,25 +124,28 @@
 
     <div class="panels">
       <section class="panel">
-        <h2>Repository response</h2>
-        <pre id="repository-output"></pre>
+        <details>
+          <summary>Repository response</summary>
+          <pre id="repository-output"></pre>
+        </details>
       </section>
 
       <section class="panel">
         <h2>Check results</h2>
         <section class="check-section">
           <h3>Record-level</h3>
-          <p class="hint">Empty or missing value = FAIL.</p>
-          <pre id="record-checks-output"></pre>
+          <p class="hint">G01–G10 search-readiness for Zenodo, Dryad, Figshare and PDB. Click a group to see its checks. UNSURE means evidence or applicability is unknown. NOT_APPLICABLE includes a reason.</p>
+          <div id="record-checks-output"></div>
         </section>
         <section class="check-section">
           <h3>Repository-level</h3>
-          <pre id="repository-checks-output"></pre>
+          <p class="hint">Submission policies for this repository. PASS = required or generated for standard submissions. WARNING = optional or conditional. UNSURE = varies or unverified. These checks do not change the record's score or counts.</p>
+          <div id="repository-checks-output"></div>
         </section>
         <section class="check-section">
           <h3>Agregators</h3>
           <p class="hint">Record found = PASS. Not found = FAIL.</p>
-          <pre id="aggregator-checks-output"></pre>
+          <div id="aggregator-checks-output"></div>
         </section>
       </section>
     </div>
@@ -128,17 +167,20 @@
       element.textContent = JSON.stringify(value, null, 2);
     }
 
+    function appendSourceLink(output, url, prefix, label = url) {
+      if (!url) return;
+      const link = document.createElement("a");
+      link.href = url;
+      link.textContent = label;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      output.append(prefix, link);
+    }
+
     function appendCheckDetails(output, check) {
       if (!check.field) {
         output.append(`DOI: ${check.doi || "Unavailable"}\n${check.message}`);
-        if (check.sourceUrl) {
-          const link = document.createElement("a");
-          link.href = check.sourceUrl;
-          link.textContent = check.sourceUrl;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          output.append(" using ", link);
-        }
+        appendSourceLink(output, check.sourceUrl, " using ");
         return;
       }
 
@@ -149,21 +191,139 @@
 
       output.append(
         fieldLabel, ` ${check.field}\n`,
-        valueLabel, ` ${JSON.stringify(check.value)}`,
+        valueLabel, ` ${JSON.stringify(check.value)}\n${check.message}`,
       );
+      if (check.passRule) output.append(`\nPASS when: ${check.passRule}`);
+      if (check.failRule) output.append(`\nFAIL when: ${check.failRule}`);
+      if (check.uncertaintyRule) output.append(`\nUNSURE when: ${check.uncertaintyRule}`);
+      if (check.searchBenefit) output.append(`\nSearch benefit: ${check.searchBenefit}`);
+      if (check.coverage) output.append(`\nCoverage: ${check.coverage}`);
+      if (check.evidence) {
+        output.append(`\nEvidence: ${JSON.stringify(check.evidence, null, 2)}`);
+      }
+      if (check.normalizedValue) {
+        output.append(`\nNormalized: ${JSON.stringify(check.normalizedValue)}`);
+      }
+      if (check.profile) {
+        output.append(`\nProfile: ${check.profile} · Rule: ${check.ruleVersion}`);
+        const applicability = check.applicable === null ? "Unknown" : check.applicable ? "Yes" : "No";
+        output.append(`\nApplicable: ${applicability} · ${check.applicabilityReason}`);
+        appendSourceLink(output, check.sourceRepresentation.url, "\nMetadata source: ");
+      }
+      appendSourceLink(output, check.sourceUrl, "\nVerification: ");
+      if (check.targetUrl) output.append(`\nTarget: ${check.targetUrl}`);
+      (check.sourceEvidence || []).forEach((source, index) => {
+        appendSourceLink(output, source.url, index ? " · " : "\nSchema sources: ", source.label);
+      });
     }
 
-    function showChecks(output, checks) {
+    function formatPoints(check) {
+      if (!(check.maxPoints > 0)) return "";
+      const bonus = check.kind === "bonus" ? " (BONUS)" : "";
+      return ` · ${check.points}/${check.maxPoints} points${bonus}`;
+    }
+
+    function checkStatus(check) {
+      const status = document.createElement("span");
+      status.className = `check-${check.status.toLowerCase()}`;
+      status.textContent = `[${check.status}]`;
+      return status;
+    }
+
+    function showRepositoryChecks(output, checks) {
       output.replaceChildren();
-      checks.forEach((check, index) => {
-        if (index > 0) output.append("\n\n");
+      if (!checks.length) return;
 
-        const status = document.createElement("span");
-        status.className = `check-${check.status.toLowerCase()}`;
-        status.textContent = `[${check.status}]`;
+      const table = document.createElement("table");
+      table.className = "repository-table";
+      const caption = table.createCaption();
+      const reviewedAt = checks[0].reviewedAt || "Unverified";
+      caption.textContent = `${checks[0].scope} Last reviewed: ${reviewedAt}.`;
 
-        output.append(status, ` ${check.label}\n`);
-        appendCheckDetails(output, check);
+      const header = table.createTHead().insertRow();
+      ["Metadata field", "Required from submitter?", "Automatic filling", "Assessment", "Explanation and sources"].forEach((label) => {
+        const cell = document.createElement("th");
+        cell.scope = "col";
+        cell.textContent = label;
+        header.append(cell);
+      });
+
+      const body = table.createTBody();
+      checks.forEach((check) => {
+        const row = body.insertRow();
+        const field = row.insertCell();
+        const label = document.createElement("strong");
+        label.textContent = check.label;
+        const path = document.createElement("code");
+        path.textContent = check.field;
+        field.append(label, document.createElement("br"), path);
+        row.insertCell().textContent = check.requirementLabel;
+        row.insertCell().textContent = check.autoFillLabel;
+        row.insertCell().append(checkStatus(check));
+
+        const explanation = row.insertCell();
+        explanation.append(check.message);
+        const sources = document.createElement("small");
+        check.sources.forEach((url, index) => {
+          appendSourceLink(sources, url, index ? " · " : "", `Source ${index + 1}`);
+        });
+        explanation.append(sources);
+      });
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "repository-table-wrapper";
+      wrapper.append(table);
+      output.append(wrapper);
+    }
+
+    function appendIndividualChecks(output, checks) {
+      checks.forEach((check) => {
+        const article = document.createElement("article");
+        article.className = "individual-check";
+        const heading = document.createElement("h4");
+        heading.append(checkStatus(check), ` ${check.label}${formatPoints(check)}`);
+        const details = document.createElement("pre");
+        if (check.testId) details.append(`${check.group} · ${check.testId}\n`);
+        appendCheckDetails(details, check);
+        article.append(heading, details);
+        output.append(article);
+      });
+    }
+
+    function showChecks(output, checks, groups = []) {
+      output.replaceChildren();
+      if (!groups.length) {
+        appendIndividualChecks(output, checks);
+        return;
+      }
+      const controls = document.createElement("div");
+      controls.className = "check-controls";
+      [["Expand all", true], ["Collapse all", false]].forEach(([label, open]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          output.querySelectorAll(".check-group").forEach((section) => { section.open = open; });
+        });
+        controls.append(button);
+      });
+      output.append(controls);
+      groups.forEach((group) => {
+        const items = checks.filter((check) => check.group === group.group);
+        const section = document.createElement("details");
+        section.className = "check-group";
+        const heading = document.createElement("summary");
+        const title = document.createElement("span");
+        title.textContent = `${group.group} · ${group.label}`;
+        const count = document.createElement("span");
+        count.className = "group-count";
+        count.textContent = `${items.length} checks · ${items.filter((check) => check.status === "PASS").length} PASS`;
+        heading.append(checkStatus(group), title, count);
+        const body = document.createElement("div");
+        body.className = "group-checks";
+        appendIndividualChecks(body, items);
+        section.append(heading, body);
+        output.append(section);
       });
     }
 
@@ -176,6 +336,28 @@
       statusOutput.textContent = message;
       repositoryOutput.textContent = "";
       clearChecks();
+    }
+
+    function formatSummary(repositoryName, summary) {
+      const {
+        passed, failed, errors, total, warnings, unsure,
+        score, maxScore, bonusScore, maxBonusScore, notApplicable,
+      } = summary;
+      const parts = [
+        `${repositoryName}`,
+        `${passed}/${total} PASS`,
+        `${failed} FAIL`,
+        `${warnings} WARNING`,
+        `${unsure} UNSURE`,
+      ];
+      if (summary.profile) {
+        parts.splice(1, 0, summary.profile);
+        parts.push(`${notApplicable} NOT_APPLICABLE`);
+      } else {
+        parts.splice(1, 0, `${score}/${maxScore} points`, `BONUS ${bonusScore}/${maxBonusScore}`);
+      }
+      if (errors) parts.push(`${errors} ERROR`);
+      return parts.join(" · ");
     }
 
     form.addEventListener("submit", async (event) => {
@@ -203,13 +385,11 @@
           return;
         }
 
-        const {passed, failed, errors, total} = result.summary;
-        const errorSummary = errors ? ` · ${errors} ERROR` : "";
-        statusOutput.textContent = `${result.repositoryName} · ${passed}/${total} PASS · ${failed} FAIL${errorSummary}`;
+        statusOutput.textContent = formatSummary(result.repositoryName, result.summary);
         showJson(repositoryOutput, result.repositoryResponse);
-        Object.entries(checkOutputs).forEach(([section, output]) => {
-          showChecks(output, result.checks[section]);
-        });
+        showChecks(checkOutputs.recordLevel, result.checks.recordLevel, result.summary.groups);
+        showRepositoryChecks(checkOutputs.repositoryLevel, result.checks.repositoryLevel);
+        showChecks(checkOutputs.aggregators, result.checks.aggregators);
       } catch (error) {
         showError("The server returned an invalid response.");
       } finally {

@@ -1,12 +1,15 @@
-"""Figshare article references, versions, and native metadata presence rules."""
+"""Figshare article references, versions, and native metadata evaluation."""
 
 import re
 from collections.abc import Mapping
+from functools import partial
 from typing import Any
 from urllib.parse import unquote
 
 from ..clients.repository_client import fetch_and_evaluate
-from ..utils.checks import Rule, evaluate_rules
+from ..utils.checks import Rule
+from ..utils.generic_metadata_checks import evaluate_generic_metadata
+from ..utils.generic_metadata_model import EvaluationContext
 from ..utils.references import extract_doi, parse_url
 
 
@@ -76,10 +79,18 @@ def can_handle(reference: str) -> bool:
     return extract_article_reference(reference) is not None
 
 
-def evaluate(repository_response: Mapping[str, Any]) -> list[dict[str, Any]]:
+def evaluate(
+    repository_response: Mapping[str, Any], *, reference: str | None = None,
+    source_url: str | None = None,
+) -> list[dict[str, Any]]:
     if repository_response.get("id") is None:
         raise ValueError("Figshare response does not contain a record ID.")
-    return evaluate_rules(repository_response, RULES)
+    article = extract_article_reference(reference) if reference else None
+    context = EvaluationContext(
+        reference=reference, expected_record_id=article[0] if article else None,
+        expected_version=article[1] if article else None, source_url=source_url,
+    )
+    return evaluate_generic_metadata(repository_response, REPOSITORY, context=context)
 
 
 def fetch(reference: str) -> dict[str, Any]:
@@ -96,5 +107,6 @@ def fetch(reference: str) -> dict[str, Any]:
         source_url=source_url,
         reference=reference,
         doi_field=DOI_FIELD,
-        evaluator=evaluate,
+        evaluator=partial(evaluate, reference=reference, source_url=source_url),
+        rules=RULES,
     )

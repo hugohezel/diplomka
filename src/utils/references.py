@@ -24,6 +24,7 @@ def parse_url(reference: str) -> SplitResult | None:
             starting with one of these domains followed by a slash:
             zenodo.org, www.zenodo.org, datadryad.org,
             www.datadryad.org, figshare.com, www.figshare.com, api.figshare.com,
+            rcsb.org, www.rcsb.org, data.rcsb.org, wwpdb.org, www.wwpdb.org,
             doi.org, or dx.doi.org. Other domains require an explicit scheme.
 
     Returns:
@@ -59,6 +60,8 @@ def parse_url(reference: str) -> SplitResult | None:
             "zenodo.org/", "www.zenodo.org/",
             "datadryad.org/", "www.datadryad.org/",
             "figshare.com/", "www.figshare.com/", "api.figshare.com/",
+            "rcsb.org/", "www.rcsb.org/", "data.rcsb.org/",
+            "wwpdb.org/", "www.wwpdb.org/",
             "doi.org/", "dx.doi.org/",
         )
     ):
