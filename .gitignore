@@ -1,3 +1,52 @@
+# Documentation and repository onboarding materials
+/docs/
+/skills/
+/SKILL.md
+/poznamky.txt
+
+# Local cluster credentials and environment configuration
+/kuba-cluster.yaml
+/kubeconfig
+/kubeconfig.*
+/.kube/
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python caches, virtual environments and build artifacts
 __pycache__/
 *.py[cod]
 .venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.cache/
+*.egg-info/
+/build/
+/dist/
+
+# Test reports and coverage artifacts
+.coverage
+.coverage.*
+/htmlcov/
+/coverage/
+/coverage.xml
+/junit.xml
+/test-results/
+
+# Local tooling, logs and temporary files
+/.idea/
+/.vscode/
+/.codex/
+/.agents/
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

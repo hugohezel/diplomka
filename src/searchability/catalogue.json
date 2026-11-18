@@ -1,0 +1,1112 @@
+{
+  "version": "searchability-v1",
+  "groups": [
+    {
+      "id": "G1",
+      "title": "Dataset identity and metadata binding"
+    },
+    {
+      "id": "G2",
+      "title": "Identifying title"
+    },
+    {
+      "id": "G3",
+      "title": "Informative description"
+    },
+    {
+      "id": "G4",
+      "title": "Subject terms and vocabularies"
+    },
+    {
+      "id": "G5",
+      "title": "Scientific content and data representation"
+    },
+    {
+      "id": "G6",
+      "title": "Actors, institutional origin and dates"
+    },
+    {
+      "id": "G7",
+      "title": "Entities, variables and coverage"
+    },
+    {
+      "id": "G8",
+      "title": "How the data were produced"
+    },
+    {
+      "id": "G9",
+      "title": "Relationships to other research objects"
+    }
+  ],
+  "operations": {
+    "READ": {
+      "type": "DET",
+      "description": "Read bound native fields without dropping incomplete rows or owner associations."
+    },
+    "NORMALIZE": {
+      "type": "DET",
+      "description": "Transform values with a shared text, identifier or controlled-value profile; retain originals and namespace evidence without assessing validity."
+    },
+    "VALIDATE": {
+      "type": "DET",
+      "description": "Apply a fixed typed validator to prepared candidates and their original context; report each candidate outcome."
+    },
+    "LOOKUP": {
+      "type": "DET",
+      "description": "Look up an authoritative entry or resolve a target with bounded requests."
+    },
+    "COMPARE": {
+      "type": "DET",
+      "description": "Compare exact canonical values, supported codes or evidenced links."
+    },
+    "LLM": {
+      "type": "LLM",
+      "description": "Run the fixed semantic task on the supplied metadata only."
+    },
+    "REDUCE": {
+      "type": "DET",
+      "description": "Apply the fixed quantifier, completeness and empty-set policy."
+    }
+  },
+  "checks": [
+    {
+      "id": "G1.1",
+      "fujiOverlap": "Identifier namespace and syntax: FsF-F1-01D, FsF-F1-02D.",
+      "group": "G1",
+      "title": "Valid dataset identifier",
+      "type": "DET",
+      "bindings": [
+        "dataset_ids"
+      ],
+      "passRule": "Pass if at least one ID has a known namespace and valid syntax. Other invalid IDs remain reported but do not negate that pass. An unexplained numeric value does not establish a namespace.",
+      "searchabilityBenefit": "Exact lookup and record disambiguation.",
+      "fujiCounterparts": [
+        "FsF-F1-01MD"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Extract every dataset ID with its path and namespace evidence: READ(record, B.dataset_ids) → ids; NORMALIZE(ids, identifier).",
+          "operations": [
+            "READ",
+            "NORMALIZE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Validate every supplied value: VALIDATE(ids, identifier, identifiers) → valid_ids.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G1.2",
+      "fujiOverlap": "Identifier matches the input: related to F1/F3. This is an integrity check.",
+      "group": "G1",
+      "title": "Dataset identifier matches the input",
+      "type": "DET",
+      "bindings": [
+        "dataset_ids"
+      ],
+      "passRule": "Pass for exact identity or an authoritative same-level alias. Fail for established different objects/versions. Missing input or unresolved level/alias evidence yields UNSURE.",
+      "searchabilityBenefit": "Retrieval of the intended dataset/version.",
+      "fujiCounterparts": [
+        "FsF-F1-02MD"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Read and canonicalize the input and declared dataset IDs: READ(input, B.input_id); reuse G1.1's ids; NORMALIZE(input_id, identifier); VALIDATE(input_id, identifier, identifiers).",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Compare IDs at the requested level: COMPARE(input_id, ids, same_object, identity). Where direct equality is insufficient, use LOOKUP({input_id, dataset_id, level}, identity, entry) and compare the evidenced aliases. Do not require G1.1 to pass before inspecting its candidates.",
+          "operations": [
+            "COMPARE",
+            "LOOKUP"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G2.1",
+      "group": "G2",
+      "title": "Non-placeholder title",
+      "type": "DET",
+      "bindings": [
+        "titles"
+      ],
+      "passRule": "Pass for at least one nonblank title outside the whole-title placeholder set. A meaningful title containing the word “data” remains eligible.",
+      "searchabilityBenefit": "Title search and recognition in results.",
+      "fujiCounterparts": [
+        "FsF-F2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Read and normalize all titles: READ(record, B.titles) → titles; NORMALIZE(titles.text, text).",
+          "operations": [
+            "READ",
+            "NORMALIZE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Test complete normalized values: VALIDATE(titles, text, placeholders_for_language) → usable_titles.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G2.2",
+      "group": "G2",
+      "title": "Title contains an identifying detail",
+      "type": "LLM",
+      "bindings": [
+        "titles"
+      ],
+      "passRule": "At least one supported detail passes; none in adequately assessed titles fails.",
+      "searchabilityBenefit": "Distinguishing datasets while scanning titles.",
+      "fujiCounterparts": [
+        "FsF-F2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.titles); NORMALIZE(titles.text, text); VALIDATE(titles, text). No nonblank title means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Read titles alone and extract identifying details: LLM(G2.2, {titles, detail_types}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Validate evidence against the titles: VALIDATE(findings, llm_evidence, G2.2).",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Read only the titles. Copy a concrete subject, data form, scale, place, time or origin detail verbatim into detail and classify it with the supported type enum. Preserve the source wording; explain the classification only in reason. Generic references to data or a study are insufficient."
+      }
+    },
+    {
+      "id": "G3.1",
+      "group": "G3",
+      "title": "Description explains what the data contain",
+      "type": "LLM",
+      "bindings": [
+        "descriptions"
+      ],
+      "passRule": "Pass if one passage, or several together, identifies actual data content. Adequately assessed context without such information fails.",
+      "searchabilityBenefit": "Concepts and phrases for natural-language queries.",
+      "fujiCounterparts": [
+        "FsF-F2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.descriptions) → descriptions; NORMALIZE(descriptions.text, text); VALIDATE(descriptions, text). No nonblank description means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Extract supported data-content statements jointly: LLM(G3.1, {descriptions}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G3.1).",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Read descriptions together. Copy a contiguous description passage stating what the evaluated data contain verbatim into content and quote it as evidence. Explain its meaning only in reason. Project aims or an article summary alone do not establish data content."
+      }
+    },
+    {
+      "id": "G3.2",
+      "group": "G3",
+      "title": "Description adds a fact beyond the title",
+      "type": "LLM",
+      "bindings": [
+        "titles",
+        "descriptions"
+      ],
+      "passRule": "Pass if descriptions add at least one data-content fact beyond all titles. Repetition, paraphrase or translation alone fails. A missing comparison title yields UNSURE.",
+      "searchabilityBenefit": "Matches more specific queries than the title supports.",
+      "fujiCounterparts": [
+        "FsF-F2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.titles); READ(record, B.descriptions); NORMALIZE(titles.text, text); NORMALIZE(descriptions.text, text); VALIDATE(titles_and_descriptions, text). If no nonblank comparison title is available, return UNSURE. Otherwise, absent descriptions fail. Use COMPARE(descriptions, titles, equal, text) to mark whole-value title copies; if every description is a copy, return FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Compare remaining descriptions with all title meanings: LLM(G3.2, {titles, descriptions_without_exact_copies}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G3.2).",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Find one description fact about content, variables, extent, conditions or observation units that no title already expresses. Copy the fact verbatim into fact and an exact source fragment carrying its additional content into adds. Explain the comparison only in reason. A paraphrase or translation adds no fact."
+      }
+    },
+    {
+      "id": "G4.1",
+      "fujiOverlap": "Keyword presence: FsF-F2-01M. Borderline overlap, limited to presence.",
+      "group": "G4",
+      "title": "Searchable subject term present",
+      "type": "DET",
+      "bindings": [
+        "terms"
+      ],
+      "passRule": "At least one nonblank free term, controlled label or documented indexable code passes. Vocabulary correctness is evaluated separately in G4.3.",
+      "searchabilityBenefit": "Keyword matches and subject facets.",
+      "fujiCounterparts": [
+        "FsF-F2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Extract and normalize term values: READ(record, B.terms) → terms; NORMALIZE(terms, text); VALIDATE(terms, text) → nonblank_terms. Use only documented conversion for numeric codes.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Report the normalizer's groups of equal canonical terms as duplicate warnings. Retain their original paths; duplicates do not affect the verdict.",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "G4.2",
+      "group": "G4",
+      "title": "Subject terms show no evidence of a topical mismatch",
+      "type": "LLM",
+      "bindings": [
+        "terms",
+        "titles",
+        "descriptions"
+      ],
+      "passRule": "Pass if every nonblank term is assessable in context and no clear topical mismatch is evidenced. Any clear mismatch fails; insufficient context or an unresolved assessment yields UNSURE. No terms fails. A term need not be explicitly mentioned in the context.",
+      "searchabilityBenefit": "Fewer irrelevant hits from misleading subject terms.",
+      "fujiCounterparts": [
+        "FsF-F2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Reuse G4.1's nonblank terms; READ(record, B.titles); READ(record, B.descriptions); NORMALIZE(titles_and_descriptions, text). No terms means FAIL; no assessable context means UNSURE.",
+          "operations": [
+            "READ",
+            "NORMALIZE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Assess every term, without requiring a positive connection for every one: LLM(G4.2, {terms, titles, descriptions}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G4.2), including complete coverage of term keys.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Review every term in context and copy each original input term unchanged into term. Use the supported assessment enum and explain the judgement only in reason. Allow indirect topics, methods and instruments. Fail only for a clear mismatch; being unmentioned is insufficient. Pass if context permits assessment and no mismatch is evidenced; otherwise return UNSURE."
+      }
+    },
+    {
+      "id": "G4.3",
+      "group": "G4",
+      "title": "Controlled subject matches its vocabulary concept",
+      "type": "DET",
+      "bindings": [
+        "controlled_subjects"
+      ],
+      "passRule": "Every declared controlled entry needs an existing concept and a matching label. A missing ID/label or proven mismatch fails. Unsupported vocabulary, unavailable lookup or insufficient language evidence yields UNSURE.",
+      "searchabilityBenefit": "Concept grouping, synonyms and query expansion.",
+      "fujiCounterparts": [
+        "FsF-I2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.controlled_subjects); NORMALIZE(subject_ids, identifier); VALIDATE(subject_ids, identifier, vocabulary_namespace); LOOKUP({scheme, id}, vocabularies, entry).",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE",
+            "LOOKUP"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Validate supplied labels as text; normalize them and the concept's applicable preferred/alternative labels. Use COMPARE(label, applicable_labels, member, vocabulary_label_rules).",
+          "operations": [
+            "COMPARE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G5.1",
+      "group": "G5",
+      "title": "Scientific kind of data is identifiable",
+      "type": "LLM",
+      "bindings": [
+        "titles",
+        "descriptions",
+        "data_types"
+      ],
+      "passRule": "One concrete scientific kind passes. Generic resource type alone fails; representation is evaluated separately in G5.2.",
+      "searchabilityBenefit": "Searches for particular kinds of scientific evidence.",
+      "fujiCounterparts": [
+        "FsF-R1-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.content_context); NORMALIZE(content_context, text); VALIDATE(content_context, text). Include exact field definitions for supplied codes. No populated permitted context means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Identify a concrete scientific data kind: LLM(G5.1, {content_context, code_definitions}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G5.1).",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Identify what the scientific records consist of. Copy the qualifying source phrase verbatim into kind and quote it as evidence; explain what it identifies only in reason. ‘Dataset’ alone is insufficient. Do not require a separate representation claim."
+      }
+    },
+    {
+      "id": "G5.2",
+      "group": "G5",
+      "title": "Data representation is identifiable",
+      "type": "LLM",
+      "bindings": [
+        "titles",
+        "descriptions",
+        "representations"
+      ],
+      "passRule": "At least one supported analytical structure passes. The filename results.csv alone fails.",
+      "searchabilityBenefit": "Selection for a particular analysis or data structure.",
+      "fujiCounterparts": [
+        "FsF-R1-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.representation_context); NORMALIZE(representation_context, text); VALIDATE(representation_context, text). No populated permitted context means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Extract an explicit representation or unambiguous structural description: LLM(G5.2, {representation_context, code_definitions}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G5.2).",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Quote how the scientific data are organized, using an explicit representation or unambiguous structural description. Copy that source phrase verbatim into representation; explain its interpretation only in reason. A generic dataset label, archive or filename extension alone is insufficient."
+      }
+    },
+    {
+      "id": "G5.3",
+      "fujiOverlap": "File format or MIME type present: FsF-F3-01M-1, FsF-R1-01MD-2a.",
+      "group": "G5",
+      "title": "File format is identifiable for every data file",
+      "type": "DET",
+      "bindings": [
+        "files"
+      ],
+      "passRule": "Pass only for a complete inventory with at least one data file and usable format evidence for every data file. A known formatless file fails; an otherwise satisfactory incomplete inventory yields UNSURE.",
+      "searchabilityBenefit": "File-format filters for compatible tools.",
+      "fujiCounterparts": [
+        "FsF-R1-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.files) → files. If needed, use LOOKUP(page_key, B.inventory_endpoint, entry) for remaining metadata pages. Retain all data candidates and the completeness flag; fetch no file contents.",
+          "operations": [
+            "READ",
+            "LOOKUP"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "For every candidate, use VALIDATE(files, format, {format, mime, name, formats}). Record which explicit value or suffix established the format; flag conflicts and files lacking evidence.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G6.1",
+      "fujiOverlap": "Named creator present: FsF-F2-01M (creator).",
+      "group": "G6",
+      "title": "Named actor present",
+      "type": "DET",
+      "bindings": [
+        "actors"
+      ],
+      "passRule": "Any nonblank creator, contributor or publisher name passes. IDs without names do not satisfy this check.",
+      "searchabilityBenefit": "Discovery by researcher, team or publisher.",
+      "fujiCounterparts": [
+        "FsF-F2-01M",
+        "FsF-R1.2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Inspect all mapped entries: READ(record, B.actors) → actors; assemble display names only as documented; NORMALIZE(actors.name, text).",
+          "operations": [
+            "READ",
+            "NORMALIZE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(actors.name, text) → named_actors. Do not stop at the first blank entry.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G6.2",
+      "group": "G6",
+      "title": "Role is interpretable for every actor",
+      "type": "BOTH",
+      "bindings": [
+        "actors",
+        "descriptions"
+      ],
+      "passRule": "Every actor needs an evidenced role at the schema-required granularity. An actor with no role evidence fails; ambiguous free text or an unsupported documented role yields UNSURE. A generic container role cannot bypass a required subtype.",
+      "searchabilityBenefit": "Searches and facets by actor role.",
+      "fujiCounterparts": [
+        "FsF-R1.2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.actors); NORMALIZE(actor_roles, controlled); COMPARE(roles, required_supported_roles, member, roles). Prefer an evidenced specific role; otherwise use a sufficient container role. Preserve conflicts and unsatisfied subtype requirements.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Only for actors whose role requires explicit prose interpretation, use LLM(G6.2, {unresolved_actors, linked_role_text, roles}). Do not infer a role from a name, affiliation or general expertise.",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G6.2); COMPARE(extracted_roles, required_supported_roles, member, roles); keep one result for every original actor.",
+          "operations": [
+            "VALIDATE",
+            "COMPARE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Map an explicit statement about the specified actor to an exact supported role enum value. Quote the actor–role statement verbatim and explain the mapping only in reason. Do not infer a role from affiliation, expertise or name."
+      }
+    },
+    {
+      "id": "G6.3",
+      "group": "G6",
+      "title": "Supplied actor identifiers identify the linked actors",
+      "type": "DET",
+      "bindings": [
+        "actors"
+      ],
+      "passRule": "Every supplied actor ID must have valid syntax, exist in its registry, remain linked to its owning actor and have compatible identity evidence. Confirmed violations fail; unavailable registries or ambiguous identity evidence yield UNSURE. No supplied IDs is NOT_APPLICABLE.",
+      "searchabilityBenefit": "Namesake disambiguation and grouping across name variants.",
+      "fujiCounterparts": [],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.actor_ids); NORMALIZE(actor_ids, identifier); VALIDATE(actor_ids, identifier, identifiers). Retain invalid and blank supplied IDs.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "For syntactically valid IDs, LOOKUP({namespace, value}, actors, entry). Use COMPARE(id, owning_actor, linked, B.actor_ids) to verify the record-level attachment and COMPARE(owning_actor, registry_actor, actor_compatible, actors) for compatibility.",
+          "operations": [
+            "LOOKUP",
+            "COMPARE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G6.4",
+      "group": "G6",
+      "title": "Institution linked to dataset origin",
+      "type": "DET",
+      "bindings": [
+        "actors",
+        "institutions"
+      ],
+      "passRule": "One evidenced institutional origin link passes. A help-desk organization, host address or unrelated contributor affiliation alone fails.",
+      "searchabilityBenefit": "Retrieval by the institution producing or publishing the data.",
+      "fujiCounterparts": [
+        "FsF-F2-01M",
+        "FsF-R1.2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.institution_edges); NORMALIZE(institution_name, text); VALIDATE(institution_name, text).",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "COMPARE(edge, {dataset, credited_actor, institution}, linked, B.institution_edges) and COMPARE(relationship, {creator, producer, publisher, affiliation_of_creator_or_producer}, member, origin_rules). These are structural/schema-grounded links, not inferred organizational mentions.",
+          "operations": [
+            "COMPARE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G6.5",
+      "fujiOverlap": "Publication or update date present: FsF-F2-01M (publication date).",
+      "group": "G6",
+      "title": "Publication or update date present",
+      "type": "DET",
+      "bindings": [
+        "dates"
+      ],
+      "passRule": "At least one valid publication/update date passes. Do not impose an additional recency threshold or substitute collection time.",
+      "searchabilityBenefit": "Publication/update filters.",
+      "fujiCounterparts": [
+        "FsF-F2-01M",
+        "FsF-R1.2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.record_dates); COMPARE(event_role, {publication, update}, member, event_definitions).",
+          "operations": [
+            "READ",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(record_dates.value, date, date_parser); retain event role, precision and timezone with each parsed value.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G7.1",
+      "group": "G7",
+      "title": "Studied entity is identifiable",
+      "type": "LLM",
+      "bindings": [
+        "titles",
+        "descriptions",
+        "entities"
+      ],
+      "passRule": "One identifiable studied entity passes; a topic such as Energy research alone fails.",
+      "searchabilityBenefit": "Discovery by studied object or population.",
+      "fujiCounterparts": [],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.entity_context); NORMALIZE(entity_context, text); VALIDATE(entity_context, text); include exact definitions for supplied entity codes. No populated permitted context means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Identify what or whom the data actually concern: LLM(G7.1, {entity_context, code_definitions}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G7.1).",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Identify an entity or class actually studied: what or whom are these data about? Copy its source naming phrase verbatim into entity and quote it as evidence, preserving its grammatical form. Explain the identification only in reason. A broad research topic, author, repository or filename alone is insufficient."
+      }
+    },
+    {
+      "id": "G7.2",
+      "group": "G7",
+      "title": "Named variable linked to the studied entity",
+      "type": "DET",
+      "bindings": [
+        "variables"
+      ],
+      "passRule": "One populated, interpretable variable descriptor linked to an entity passes. An unexplained v1 or a descriptor without a link fails. An unresolved mapping/definition source yields UNSURE; do not replace the check with description mining.",
+      "searchabilityBenefit": "Queries for a specific property of a studied entity.",
+      "fujiCounterparts": [
+        "FsF-R1-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.variables) → variables. For supplied codes needing definitions, use LOOKUP(code, variable_dictionary, entry); retain unresolved descriptors.",
+          "operations": [
+            "READ",
+            "LOOKUP"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(variable_label, label, {label_binding, definitions, placeholders}); COMPARE(variable, studied_entity, linked, B.variable_entity_links). A schema field definition alone does not create a populated variable descriptor in an otherwise empty record.",
+          "operations": [
+            "VALIDATE",
+            "COMPARE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G7.3",
+      "group": "G7",
+      "title": "Geographic coverage is identifiable",
+      "type": "BOTH",
+      "bindings": [
+        "spatial",
+        "descriptions"
+      ],
+      "passRule": "Pass if at least one valid place or geometry is explicitly linked to data collection or the represented area. Use structured evidence first, then descriptive text if needed. Missing coverage fails; unresolved CRS, parser or scope yields UNSURE when no positive witness exists.",
+      "searchabilityBenefit": "Place queries, geographic filters and map search.",
+      "fujiCounterparts": [],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.spatial_coverage); VALIDATE(candidates, spatial, spatial_parser); COMPARE(candidate, data_coverage_scope, linked, B.spatial_coverage). If any structured candidate passes, the check passes; retain all other candidates as diagnostics.",
+          "operations": [
+            "READ",
+            "VALIDATE",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Otherwise, READ(record, B.coverage_text); NORMALIZE(coverage_text, text); VALIDATE(coverage_text, text). Known absence of both structured evidence and nonblank text means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Extract from the fixed text inputs: LLM(G7.3, {coverage_text}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G7.3); VALIDATE(extracted_places_or_geometries, spatial, spatial_parser). Keep the earlier structured results rather than replacing them.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Extract a place or geometry explicitly linked to where the data were collected or the area represented. Copy place names and declared CRS text verbatim; encode only explicitly supplied geometry in the required GeoJSON form without changing coordinates. Quote the original coverage link and explain the interpretation only in reason. Exclude actor addresses and affiliations."
+      }
+    },
+    {
+      "id": "G7.4",
+      "group": "G7",
+      "title": "Temporal coverage is identifiable",
+      "type": "BOTH",
+      "bindings": [
+        "temporal",
+        "descriptions"
+      ],
+      "passRule": "Pass if at least one valid point or interval identifies when observations or the represented phenomenon occurred. Use structured evidence first, then descriptive text if needed. Publication/update dates alone fail; an uninterpretable time expression yields UNSURE when no positive witness exists.",
+      "searchabilityBenefit": "Discovery by the period represented in the data.",
+      "fujiCounterparts": [],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.temporal_coverage); VALIDATE(candidates, temporal, temporal_parser); COMPARE(candidate, represented_data_time, linked, B.temporal_coverage). If any structured candidate passes, the check passes; retain all other candidates as diagnostics.",
+          "operations": [
+            "READ",
+            "VALIDATE",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "Otherwise, READ(record, B.coverage_text); NORMALIZE(coverage_text, text); VALIDATE(coverage_text, text). Known absence of both structured evidence and nonblank text means FAIL.",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "Extract from the fixed text inputs: LLM(G7.4, {coverage_text}).",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G7.4); VALIDATE(extracted_time, temporal, temporal_parser). Keep earlier structured results. Values contain either kind=point with point, or kind=interval with start/end; retain precision and any explicitly open bound.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Extract when the observations or represented phenomenon occurred. Quote the original context verbatim. Convert only the date representation to the required ISO form, preserving the evidenced era, bounds and precision; use the prescribed kind, precision and open-bound values. Explain conversions only in reason. Publication/update dates alone do not count; do not invent interval bounds."
+      }
+    },
+    {
+      "id": "G8.1",
+      "group": "G8",
+      "title": "Data production methods have a role and scope",
+      "type": "BOTH",
+      "bindings": [
+        "production_items",
+        "production_text",
+        "descriptions"
+      ],
+      "passRule": "At least one production item is required, and every identified item needs both role and scope. Known missing links fail; ambiguous links or an incomplete semantic scan yield UNSURE.",
+      "searchabilityBenefit": "Queries combining data with production methods or instruments.",
+      "fujiCounterparts": [
+        "FsF-R1.2-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.production_items) → production_candidates; VALIDATE(name, text); NORMALIZE(role, controlled); COMPARE(role, production_roles, member, roles); COMPARE(item, scope, linked, B.production_scope_links). Retain candidates missing role or scope.",
+          "operations": [
+            "READ",
+            "VALIDATE",
+            "NORMALIZE",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "READ(record, B.production_text); NORMALIZE(production_text, text); VALIDATE(production_text, text).",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "For mapped production text, use LLM(G8.1, {production_text, unresolved_structured_items, production_roles}). Extract all additional production items and resolve existing items only through explicit evidence. Preserve original keys; do not discard an unresolved structured item. Exclude techniques mentioned solely as context or later reuse.",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G8.1); COMPARE(extracted_roles, production_roles, member, roles). Combine structured and grounded text items, preserving each item's role/scope evidence and scan completeness.",
+          "operations": [
+            "VALIDATE",
+            "COMPARE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Identify every method, process/action or instrument credited with producing these data. Copy item and its affected-data scope as separate contiguous, verbatim fragments of the quoted production statement, preserving the original wording and grammatical form. Preserve a required input item's supplied name. Use an exact supported role enum; scope may use the fixed marker dataset only for an explicitly evidenced whole-dataset scope. Explain interpretations only in reason. Exclude context and later reuse; retain items whose role or scope is missing with null missing fields."
+      }
+    },
+    {
+      "id": "G9.1",
+      "fujiOverlap": "Related identifier present: FsF-I3-01M. Overlap is limited to presence.",
+      "group": "G9",
+      "title": "Explicit link to a related research object",
+      "type": "BOTH",
+      "bindings": [
+        "relations",
+        "descriptions"
+      ],
+      "passRule": "One explicit relationship with a specific target ID/URI passes. Incomplete additional entries do not negate it. Bare targets alone fail; precise relation typing/direction is evaluated in G9.3.",
+      "searchabilityBenefit": "Discovery through related publications, studies or datasets.",
+      "fujiCounterparts": [
+        "FsF-I3-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(record, B.relations) → relation_candidates. Keep predicate–target associations. Use VALIDATE(target, text) and COMPARE(assertion, {dataset, target}, linked, B.relation_links) to test complete explicit pairs; documented identifier conversion is allowed. Syntax validation belongs to G9.2.",
+          "operations": [
+            "READ",
+            "VALIDATE",
+            "COMPARE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "READ(record, B.relation_text); NORMALIZE(relation_text, text); VALIDATE(relation_text, text).",
+          "operations": [
+            "READ",
+            "NORMALIZE",
+            "VALIDATE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "When mapped relation text is nonblank, use LLM(G9.1, {relation_text, assessed_dataset_ids}). Extract explicit relations with literal target IDs/URIs. Retain incomplete assertions with target=null and bare candidate target IDs with relationship_text=null; never invent a target from a publication title. Exclude confirmed IDs of the assessed dataset itself.",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G9.1); persist the union of all structured/text candidates, including incomplete pairs and bare targets. A quoted bare ID is retained but cannot pass this check. Complete extraction before downstream universal checks, even if one pair already establishes G9.1's pass.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Extract explicit dataset–object relationships. Copy target IDs/URIs, relationship_text and explicit subject phrases verbatim from the supplied assertions, preserving identifier spelling and prefixes. The fixed subject marker dataset is allowed only for the explicitly identified evaluated dataset. Quote the target and relationship together when present and explain the interpretation only in reason. Retain incomplete assertions and bare IDs with null missing slots; never invent identifiers."
+      }
+    },
+    {
+      "id": "G9.2",
+      "group": "G9",
+      "title": "Related-object identifiers have valid syntax",
+      "type": "DET",
+      "bindings": [
+        "relations",
+        "descriptions"
+      ],
+      "passRule": "Every supplied target must have valid recognized syntax and a compatible supplied scheme. A known mismatch or malformed ID fails; a required documented scheme awaiting support yields UNSURE.",
+      "searchabilityBenefit": "Correct lookup keys and resolver selection.",
+      "fujiCounterparts": [
+        "FsF-I3-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(relation_candidates, supplied_targets). Include every supplied target, even when its relationship is missing. NORMALIZE(targets, identifier) selects the most specific recognized namespace before generic URL handling.",
+          "operations": [
+            "READ",
+            "NORMALIZE"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(targets, identifier, {identifiers, declared_scheme}). Do not reinterpret an invalid recognized PID as an ordinary URL to obtain a pass.",
+          "operations": [
+            "VALIDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G9.3",
+      "group": "G9",
+      "title": "Relationship type and direction are interpretable",
+      "type": "BOTH",
+      "bindings": [
+        "relations",
+        "descriptions"
+      ],
+      "passRule": "Every declared relationship needs a specific supported type and an evidenced direction from the dataset perspective, or a symmetric type. Missing/generic types or proven reversed interpretations fail; undefined meanings or ambiguous direction yield UNSURE. Target syntax is checked separately.",
+      "searchabilityBenefit": "Distinguishing sources, derived products, parts and versions while traversing links.",
+      "fujiCounterparts": [
+        "FsF-I3-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "READ(relation_candidates, declared_relationships). Every structured relation entry is included, even if its predicate is missing; a bare prose ID without an assertion is not a declared relationship. NORMALIZE(predicates, controlled) maps documented types and inverts only documented opposite-direction conventions.",
+          "operations": [
+            "READ",
+            "NORMALIZE"
+          ]
+        },
+        {
+          "method": "LLM",
+          "description": "For explicit prose assertions requiring interpretation, use LLM(G9.3, {assertions, original_evidence, supported_relations}). Keep their original candidate keys and targets.",
+          "operations": [
+            "LLM"
+          ]
+        },
+        {
+          "method": "DET",
+          "description": "VALIDATE(findings, llm_evidence, G9.3); COMPARE(canonical_type, supported_specific_relations, member, relations); COMPARE(assertion, dataset_oriented_edge, linked, direction_evidence). Accept an evidenced symmetric predicate without inventing an orientation.",
+          "operations": [
+            "VALIDATE",
+            "COMPARE"
+          ]
+        }
+      ],
+      "task": {
+        "instruction": "Map each supplied assertion to an exact supported specific relation enum from the dataset's perspective, using the prescribed direction enum. Copy the supplied target identifier unchanged and quote the original assertion verbatim; explain the mapping only in reason. Identify subject and target; invert only with evidence. Preserve symmetric relations. Generic ‘related to’ is insufficient."
+      }
+    },
+    {
+      "id": "G9.4",
+      "group": "G9",
+      "title": "Resolvable related targets are reachable",
+      "type": "DET",
+      "bindings": [
+        "relations",
+        "descriptions"
+      ],
+      "passRule": "Every supplied target with a known resolution mechanism must reach a target-specific destination, and at least one eligible target is needed for PASS. Confirmed absence fails; temporary errors or unresolved resolver support yield UNSURE. A fully known set with no eligible targets is NOT_APPLICABLE.",
+      "searchabilityBenefit": "Usable navigation to related research objects.",
+      "fujiCounterparts": [
+        "FsF-I3-01M"
+      ],
+      "duplicateOf": [],
+      "steps": [
+        {
+          "method": "DET",
+          "description": "Reuse every supplied target and its G9.2 namespace/syntax result, regardless of G9.1's outcome. Include namespaces with a defined resolution mechanism. Known namespaces without one are out of scope; unresolved namespace/resolver support contributes UNSURE. A malformed target in a resolvable namespace fails without making a request.",
+          "operations": []
+        },
+        {
+          "method": "DET",
+          "description": "For valid eligible targets, use LOOKUP({namespace, canonical_target}, retrieval_profile, target). Reuse a result for exact duplicate keys, while retaining evidence for every original target. Record final endpoint, response and time.",
+          "operations": [
+            "LOOKUP"
+          ]
+        }
+      ]
+    }
+  ]
+}

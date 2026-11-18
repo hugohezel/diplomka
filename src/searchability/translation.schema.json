@@ -1,0 +1,1069 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Repository searchability bindings",
+  "description": "Native paths and documented schema semantics only. Empty binding lists declare known absence; omitted lists leave mapping unresolved. Criteria, operations, prompts and UI text are system-owned.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "repository",
+    "catalogue",
+    "registries",
+    "bindings"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "const": 2
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "catalogue": {
+      "const": "searchability-v1"
+    },
+    "registries": {
+      "const": "core-v1"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^https?://"
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "level",
+                            "scheme",
+                            "scope",
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "level",
+                            "scheme",
+                            "scope",
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "titles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "language",
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "language",
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "descriptions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "language",
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "language",
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "terms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "code",
+                            "scheme",
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "code",
+                            "scheme",
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "controlled_subjects": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "id",
+                            "label",
+                            "language",
+                            "scheme"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "id",
+                            "label",
+                            "language",
+                            "scheme"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "files": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "format",
+                            "mime",
+                            "name",
+                            "role"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "format",
+                            "mime",
+                            "name",
+                            "role"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "actors": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "affiliation",
+                            "family",
+                            "given",
+                            "name",
+                            "role",
+                            "role_text",
+                            "type"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "affiliation",
+                            "family",
+                            "given",
+                            "name",
+                            "role",
+                            "role_text",
+                            "type"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "institutions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "name",
+                            "role"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "name",
+                            "role"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "dates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "event",
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "event",
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "spatial": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "crs",
+                            "geometry",
+                            "latitude",
+                            "longitude",
+                            "place"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "crs",
+                            "geometry",
+                            "latitude",
+                            "longitude",
+                            "place"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "temporal": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "end",
+                            "event",
+                            "point",
+                            "start"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "end",
+                            "event",
+                            "point",
+                            "start"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "variables": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "code",
+                            "entity",
+                            "entity_ref",
+                            "label",
+                            "name"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "code",
+                            "entity",
+                            "entity_ref",
+                            "label",
+                            "name"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "production_items": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "name",
+                            "role",
+                            "scope"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "name",
+                            "role",
+                            "scope"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "production_text": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "data_types": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "representations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "entities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "id",
+                            "value"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "id",
+                            "value"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "relations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/path"
+              },
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/binding"
+                  },
+                  {
+                    "properties": {
+                      "fields": {
+                        "propertyNames": {
+                          "enum": [
+                            "direction",
+                            "predicate",
+                            "scheme",
+                            "target"
+                          ]
+                        }
+                      },
+                      "maps": {
+                        "propertyNames": {
+                          "enum": [
+                            "direction",
+                            "predicate",
+                            "scheme",
+                            "target"
+                          ]
+                        }
+                      }
+                    },
+                    "not": {
+                      "required": [
+                        "identifiers"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "path": {
+      "type": "string",
+      "pattern": "^(?:[^.\\[\\]]+(?:\\[(?:[0-9]+)?\\])?)(?:\\.[^.\\[\\]]+(?:\\[(?:[0-9]+)?\\])?)*$|^$"
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "allow_open": {
+          "type": "boolean"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "crs": {
+          "type": "string"
+        },
+        "definitions": {
+          "$ref": "#/$defs/stringMap"
+        },
+        "direction": {
+          "enum": [
+            "dataset_to_target",
+            "target_to_dataset",
+            "symmetric"
+          ]
+        },
+        "event": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "html": {
+          "type": "boolean"
+        },
+        "identifiers": {
+          "anyOf": [
+            {
+              "type": "object",
+              "propertyNames": {
+                "enum": [
+                  "zenodo_record",
+                  "doi",
+                  "orcid",
+                  "gnd",
+                  "url",
+                  "handle",
+                  "ark",
+                  "urn",
+                  "pmid",
+                  "pmcid",
+                  "arxiv",
+                  "isbn",
+                  "issn",
+                  "ror",
+                  "uuid",
+                  "lcsh",
+                  "efo",
+                  "mesh",
+                  "fos",
+                  "opencontext_record",
+                  "mast_observation",
+                  "metabolights_study"
+                ]
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/path"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/actorIdentifierBinding"
+              }
+            }
+          ]
+        },
+        "language": {
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "version",
+            "concept",
+            "object"
+          ]
+        },
+        "maps": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/stringMap"
+          }
+        },
+        "name_order": {
+          "type": "string"
+        },
+        "namespace": {
+          "enum": [
+            "zenodo_record",
+            "doi",
+            "orcid",
+            "gnd",
+            "url",
+            "handle",
+            "ark",
+            "urn",
+            "pmid",
+            "pmcid",
+            "arxiv",
+            "isbn",
+            "issn",
+            "ror",
+            "uuid",
+            "lcsh",
+            "efo",
+            "mesh",
+            "fos",
+            "opencontext_record",
+            "mast_observation",
+            "metabolights_study"
+          ]
+        },
+        "parser": {
+          "enum": [
+            "iso",
+            "iso_extended",
+            "dmy",
+            "ymd_slash",
+            "mjd",
+            "iso_interval",
+            "year"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "predicate": {
+          "type": "string"
+        },
+        "requires_subtype": {
+          "type": "boolean"
+        },
+        "role": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "if_any": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          },
+          "description": "Select an item only when at least one fixed relative path has a nonblank value. Empty path selects the item itself; malformed candidates remain assessable."
+        }
+      }
+    },
+    "actorIdentifierBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "fields": {
+          "type": "object",
+          "required": [
+            "value",
+            "scheme"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "$ref": "#/$defs/path"
+            },
+            "scheme": {
+              "$ref": "#/$defs/path"
+            }
+          }
+        },
+        "maps": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scheme": {
+              "$ref": "#/$defs/stringMap"
+            }
+          }
+        }
+      }
+    }
+  }
+}

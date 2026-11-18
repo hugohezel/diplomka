@@ -2,7 +2,7 @@
 
 import os
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.client import HTTPException
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -106,11 +106,18 @@ def check_discoverability(
     return result
 
 
-def evaluate_aggregators(doi: str | None) -> list[dict[str, Any]]:
+def evaluate_aggregators(doi: str | None, *, on_event=None) -> list[dict[str, Any]]:
     lookups = (("OpenAIRE", find_in_openaire), ("OpenAlex", find_in_openalex))
+    results = {}
     with ThreadPoolExecutor(max_workers=len(lookups)) as executor:
-        futures = [
-            executor.submit(check_discoverability, name, lookup, doi)
-            for name, lookup in lookups
-        ]
-        return [future.result() for future in futures]
+        futures = {}
+        for index, (name, lookup) in enumerate(lookups):
+            if on_event:
+                on_event({"event": "aggregator_started", "label": f"Discoverable in {name}", "doi": doi})
+            futures[executor.submit(check_discoverability, name, lookup, doi)] = index
+        for future in as_completed(futures):
+            result = future.result()
+            results[futures[future]] = result
+            if on_event:
+                on_event({"event": "aggregator_finished", "check": result})
+    return [results[index] for index in range(len(lookups))]

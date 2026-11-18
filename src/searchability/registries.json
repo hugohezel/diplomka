@@ -1,0 +1,521 @@
+{
+  "version": "core-v1",
+  "identifiers": {
+    "mast_observation": {
+      "pattern": "[1-9][0-9]*",
+      "integer": true
+    },
+    "zenodo_record": {
+      "pattern": "[1-9][0-9]*",
+      "integer": true,
+      "prefix_pattern": "https?://(?:www\\.)?zenodo\\.org/(?:records?|api/records)/([1-9][0-9]*)/?",
+      "resolver": "https://zenodo.org/records/{value}"
+    },
+    "doi": {
+      "prefixes": [
+        "https://doi.org/",
+        "http://doi.org/",
+        "https://dx.doi.org/",
+        "http://dx.doi.org/",
+        "doi:"
+      ],
+      "pattern": "10\\.[0-9]{4,9}/[^\\s]+",
+      "resolver": "https://doi.org/{value}",
+      "casefold": true
+    },
+    "orcid": {
+      "prefixes": [
+        "https://orcid.org/",
+        "http://orcid.org/"
+      ],
+      "strip_trailing_slash": true,
+      "uppercase": true,
+      "validator": "orcid",
+      "resolver": "https://orcid.org/{value}"
+    },
+    "gnd": {
+      "prefixes": [
+        "https://d-nb.info/gnd/",
+        "http://d-nb.info/gnd/"
+      ],
+      "strip_trailing_slash": true,
+      "uppercase": true,
+      "pattern": "[0-9]+(?:-[0-9X])?",
+      "resolver": "https://d-nb.info/gnd/{value}",
+      "validator": "gnd"
+    },
+    "url": {
+      "aliases": [
+        "uri",
+        "purl"
+      ],
+      "validator": "url",
+      "resolver": "{value}"
+    },
+    "handle": {
+      "aliases": [
+        "hdl"
+      ],
+      "prefixes": [
+        "https://hdl.handle.net/",
+        "http://hdl.handle.net/",
+        "hdl:"
+      ],
+      "pattern": "[0-9]+(?:\\.[0-9]+)*/[^\\s]+",
+      "resolver": "https://hdl.handle.net/{value}"
+    },
+    "ark": {
+      "pattern": "ark:/[0-9]{5}/[^\\s]+",
+      "resolver": "https://n2t.net/{value}",
+      "prefix_pattern": "https?://n2t\\.net/(ark:/[0-9]{5}/[^\\s?#]+)"
+    },
+    "urn": {
+      "pattern": "urn:[a-z0-9][a-z0-9-]{1,31}:[^\\s]+"
+    },
+    "pmid": {
+      "prefixes": [
+        "https://pubmed.ncbi.nlm.nih.gov/",
+        "pmid:"
+      ],
+      "strip_trailing_slash": true,
+      "pattern": "[1-9][0-9]*",
+      "resolver": "https://pubmed.ncbi.nlm.nih.gov/{value}/"
+    },
+    "pmcid": {
+      "prefixes": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/"
+      ],
+      "strip_trailing_slash": true,
+      "pattern": "PMC[1-9][0-9]*",
+      "resolver": "https://pmc.ncbi.nlm.nih.gov/articles/{value}/"
+    },
+    "arxiv": {
+      "prefixes": [
+        "https://arxiv.org/abs/",
+        "http://arxiv.org/abs/",
+        "arxiv:"
+      ],
+      "pattern": "(?:[0-9]{4}\\.[0-9]{4,5}|[a-z-]+(?:\\.[a-z]{2})?/[0-9]{7})(?:v[1-9][0-9]*)?",
+      "resolver": "https://arxiv.org/abs/{value}"
+    },
+    "isbn": {
+      "prefixes": [
+        "isbn:"
+      ],
+      "remove": "[ -]",
+      "uppercase": true,
+      "validator": "isbn"
+    },
+    "issn": {
+      "aliases": [
+        "eissn",
+        "lissn"
+      ],
+      "prefixes": [
+        "issn:"
+      ],
+      "remove": "[ -]",
+      "uppercase": true,
+      "validator": "issn"
+    },
+    "ror": {
+      "prefixes": [
+        "https://ror.org/",
+        "http://ror.org/"
+      ],
+      "pattern": "0[a-hj-km-np-tv-z0-9]{6}[0-9]{2}",
+      "validator": "ror",
+      "resolver": "https://ror.org/{value}"
+    },
+    "uuid": {
+      "pattern": "[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
+    },
+    "lcsh": {
+      "prefixes": [
+        "https://id.loc.gov/authorities/subjects/",
+        "http://id.loc.gov/authorities/subjects/"
+      ],
+      "pattern": "sh[0-9]+",
+      "resolver": "https://id.loc.gov/authorities/subjects/{value}"
+    },
+    "efo": {
+      "prefixes": [
+        "https://www.ebi.ac.uk/efo/",
+        "http://www.ebi.ac.uk/efo/"
+      ],
+      "pattern": "EFO_[0-9]+",
+      "resolver": "https://www.ebi.ac.uk/efo/{value}",
+      "replacements": {
+        "EFO:": "EFO_"
+      }
+    },
+    "mesh": {
+      "prefixes": [
+        "https://id.nlm.nih.gov/mesh/",
+        "http://id.nlm.nih.gov/mesh/"
+      ],
+      "pattern": "[DC][0-9]{6,9}",
+      "resolver": "https://id.nlm.nih.gov/mesh/{value}"
+    },
+    "fos": {
+      "aliases": [
+        "oecd",
+        "oecd fos",
+        "oecd fos 2007"
+      ],
+      "pattern": "[1-6](?:\\.[0-9]{1,2})?"
+    },
+    "opencontext_record": {
+      "pattern": "(?:projects|subjects|media|documents|tables|persons)/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+      "prefix_pattern": "https?://(?:www\\.)?opencontext\\.org/((?:projects|subjects|media|documents|tables|persons)/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})/?",
+      "casefold": true,
+      "resolver": "https://opencontext.org/{value}"
+    },
+    "metabolights_study": {
+      "pattern": "MTBLS[1-9][0-9]*",
+      "prefix_pattern": "https?://(?:www\\.)?ebi\\.ac\\.uk/metabolights/(?:studies/|editor/|ws/studies/(?:public/study/)?)?(MTBLS[1-9][0-9]*)/?",
+      "replacements": {
+        "MTBLS": "MTBLS"
+      },
+      "resolver": "https://www.ebi.ac.uk/metabolights/{value}"
+    }
+  },
+  "placeholders": {
+    "en": [
+      "dataset",
+      "data",
+      "unknown",
+      "title",
+      "name",
+      "untitled",
+      "untitled dataset",
+      "dataset title",
+      "title here",
+      "todo",
+      "tbd",
+      "[title]",
+      "{title}",
+      "<title>"
+    ],
+    "sk": [
+      "údaje",
+      "dáta",
+      "dataset",
+      "bez názvu",
+      "neznámy názov"
+    ],
+    "cs": [
+      "data",
+      "datová sada",
+      "bez názvu",
+      "neznámý název"
+    ]
+  },
+  "roles": [
+    "Creator",
+    "Contributor",
+    "Publisher",
+    "Producer",
+    "ContactPerson",
+    "DataCollector",
+    "DataCurator",
+    "DataManager",
+    "Distributor",
+    "Editor",
+    "HostingInstitution",
+    "ProjectLeader",
+    "ProjectManager",
+    "ProjectMember",
+    "RegistrationAgency",
+    "RegistrationAuthority",
+    "RelatedPerson",
+    "Researcher",
+    "ResearchGroup",
+    "RightsHolder",
+    "Supervisor",
+    "Sponsor",
+    "WorkPackageLeader",
+    "Other"
+  ],
+  "productionRoles": [
+    "acquisition",
+    "generation",
+    "processing",
+    "aggregation",
+    "annotation",
+    "simulation",
+    "calibration",
+    "digitization"
+  ],
+  "originRoles": [
+    "Creator",
+    "Producer",
+    "DataCollector",
+    "ResearchGroup",
+    "Publisher",
+    "ProjectLeader",
+    "Researcher"
+  ],
+  "relations": [
+    "isCitedBy",
+    "cites",
+    "isSupplementTo",
+    "isSupplementedBy",
+    "isContinuedBy",
+    "continues",
+    "isDescribedBy",
+    "describes",
+    "hasMetadata",
+    "isMetadataFor",
+    "isNewVersionOf",
+    "isPreviousVersionOf",
+    "isPartOf",
+    "hasPart",
+    "isReferencedBy",
+    "references",
+    "isDocumentedBy",
+    "documents",
+    "isCompiledBy",
+    "compiles",
+    "isVariantFormOf",
+    "isOriginalFormOf",
+    "isIdenticalTo",
+    "isAlternateIdentifier",
+    "isReviewedBy",
+    "reviews",
+    "isDerivedFrom",
+    "isSourceOf",
+    "requires",
+    "isRequiredBy",
+    "isObsoletedBy",
+    "obsoletes"
+  ],
+  "inverseRelations": {
+    "isCitedBy": "cites",
+    "isSupplementTo": "isSupplementedBy",
+    "isContinuedBy": "continues",
+    "isDescribedBy": "describes",
+    "hasMetadata": "isMetadataFor",
+    "isNewVersionOf": "isPreviousVersionOf",
+    "isPartOf": "hasPart",
+    "isReferencedBy": "references",
+    "isDocumentedBy": "documents",
+    "isCompiledBy": "compiles",
+    "isVariantFormOf": "isOriginalFormOf",
+    "isReviewedBy": "reviews",
+    "isDerivedFrom": "isSourceOf",
+    "requires": "isRequiredBy",
+    "isObsoletedBy": "obsoletes",
+    "cites": "isCitedBy",
+    "isSupplementedBy": "isSupplementTo",
+    "continues": "isContinuedBy",
+    "describes": "isDescribedBy",
+    "isMetadataFor": "hasMetadata",
+    "isPreviousVersionOf": "isNewVersionOf",
+    "hasPart": "isPartOf",
+    "references": "isReferencedBy",
+    "documents": "isDocumentedBy",
+    "compiles": "isCompiledBy",
+    "isOriginalFormOf": "isVariantFormOf",
+    "reviews": "isReviewedBy",
+    "isSourceOf": "isDerivedFrom",
+    "isRequiredBy": "requires",
+    "obsoletes": "isObsoletedBy"
+  },
+  "symmetricRelations": [
+    "isIdenticalTo",
+    "isAlternateIdentifier"
+  ],
+  "extensions": [
+    "csv",
+    "tsv",
+    "txt",
+    "json",
+    "jsonl",
+    "xml",
+    "yaml",
+    "yml",
+    "xlsx",
+    "xls",
+    "ods",
+    "parquet",
+    "feather",
+    "arrow",
+    "nc",
+    "netcdf",
+    "h5",
+    "hdf5",
+    "hdf",
+    "tif",
+    "tiff",
+    "geotiff",
+    "geojson",
+    "shp",
+    "gpkg",
+    "gff",
+    "gtf",
+    "fasta",
+    "fa",
+    "fastq",
+    "fq",
+    "bam",
+    "sam",
+    "vcf",
+    "pdb",
+    "cif",
+    "mmcif",
+    "mrc",
+    "npy",
+    "npz",
+    "mat",
+    "rds",
+    "rda",
+    "wav",
+    "mp3",
+    "mp4",
+    "png",
+    "jpg",
+    "jpeg",
+    "svg",
+    "pdf",
+    "zip",
+    "tar",
+    "gz",
+    "bz2",
+    "xz",
+    "7z",
+    "csv.gz",
+    "tsv.gz",
+    "fastq.gz",
+    "fasta.gz",
+    "tar.gz",
+    "tar.bz2",
+    "tar.xz",
+    "nii",
+    "nii.gz",
+    "md",
+    "markdown",
+    "rst",
+    "html",
+    "htm",
+    "rtf",
+    "fits",
+    "fit",
+    "dta",
+    "sav",
+    "sas7bdat",
+    "sqlite",
+    "dbf",
+    "nrrd",
+    "vtk",
+    "vtu",
+    "ply",
+    "obj",
+    "las",
+    "laz",
+    "mzml",
+    "mzxml",
+    "mtx",
+    "bed",
+    "bim",
+    "fam",
+    "ped",
+    "r"
+  ],
+  "vocabularies": {
+    "lcsh": {
+      "aliases": [
+        "lcsh"
+      ],
+      "pattern": "https?://id\\.loc\\.gov/authorities/subjects/sh[0-9]+"
+    },
+    "efo": {
+      "aliases": [
+        "efo"
+      ],
+      "pattern": "(?:EFO[:_][0-9]+|https?://www\\.ebi\\.ac\\.uk/efo/EFO_[0-9]+)"
+    },
+    "mesh": {
+      "aliases": [
+        "mesh"
+      ],
+      "pattern": "(?:[DC][0-9]{6,9}|https?://id\\.nlm\\.nih\\.gov/mesh/[DC][0-9]{6,9})"
+    },
+    "gnd": {
+      "aliases": [
+        "gnd"
+      ],
+      "pattern": "(?:[0-9]{5,}(?:-[0-9X])?|https?://d-nb\\.info/gnd/[0-9]+(?:-[0-9X])?)"
+    },
+    "fos": {
+      "aliases": [
+        "fos",
+        "oecd",
+        "oecd fos",
+        "oecd fos 2007"
+      ],
+      "pattern": "[1-6](?:\\.[0-9]{1,2})?"
+    }
+  },
+  "dateEvents": {
+    "publication": "publication",
+    "published": "publication",
+    "issued": "publication",
+    "update": "update",
+    "updated": "update",
+    "modified": "update"
+  },
+  "temporalEvents": {
+    "collected": "collection",
+    "collection": "collection",
+    "valid": "valid",
+    "coverage": "coverage",
+    "withdrawn": "withdrawal"
+  },
+  "textProfiles": [
+    "text",
+    "identifier",
+    "controlled"
+  ],
+  "validators": [
+    "text",
+    "identifier",
+    "date",
+    "spatial",
+    "temporal",
+    "format",
+    "label",
+    "llm_evidence"
+  ],
+  "comparisonModes": [
+    "equal",
+    "member",
+    "linked",
+    "same_object",
+    "actor_compatible"
+  ],
+  "retrieval": {
+    "timeout": 10,
+    "maxRedirects": 5,
+    "maxTargetBytes": 65536,
+    "maxRegistryBytes": 8388608
+  },
+  "identityAliases": [],
+  "formatLabels": {
+    "comma-separated values": "csv",
+    "tab-separated values": "tsv",
+    "plain text": "txt",
+    "json lines": "jsonl",
+    "newline-delimited json": "jsonl",
+    "netcdf": "nc",
+    "hdf5": "h5",
+    "geotiff": "tif",
+    "esri shapefile": "shp",
+    "geopackage": "gpkg",
+    "nifti": "nii",
+    "zip archive": "zip",
+    "gzip": "gz",
+    "microsoft excel": "xlsx",
+    "markdown": "md"
+  }
+}

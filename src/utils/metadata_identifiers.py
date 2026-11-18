@@ -6,16 +6,12 @@ from urllib.parse import quote, unquote
 
 from .checks import plain_text
 from .references import DOI_HOSTS, extract_doi, parse_url
-from .pdb_identifiers import normalize_pdb_id
 
 
 UUID_PATTERN = re.compile(
     r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
 )
 ORCID_PATTERN = re.compile(r"[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]")
-ROR_PATTERN = re.compile(r"0[0-9a-hjkmnp-tv-z]{6}[0-9]{2}")
-CROCKFORD_ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz"
-ROR_URL_PREFIXES = ("https://ror.org/", "http://ror.org/", "ror.org/")
 
 
 def identifier_present(value: Any) -> bool:
@@ -42,41 +38,8 @@ def orcid_id(value: Any) -> str | None:
     return value if digits[-1] == expected else None
 
 
-def valid_orcid(value: Any) -> bool:
-    return orcid_id(value) is not None
-
-
-def ror_id(value: Any) -> str | None:
-    value = plain_text(value)
-    for prefix in ROR_URL_PREFIXES:
-        if value.startswith(prefix):
-            value = value[len(prefix):]
-            break
-    if not ROR_PATTERN.fullmatch(value):
-        return None
-
-    # Decode Crockford base32, then validate the two MOD 97-10 check digits.
-    number = 0
-    for char in value[:7]:
-        number = number * 32 + CROCKFORD_ALPHABET.index(char)
-    checksum = 98 - (number * 100) % 97
-    return value if int(value[-2:]) == checksum else None
-
-
-def identifier_syntax(
-    value: Any, *, local_scheme: str | None = None
-) -> tuple[str | None, bool, str | None]:
+def identifier_syntax(value: Any) -> tuple[str | None, bool, str | None]:
     """Return the recognized scheme, syntax validity and optional resolver URL."""
-    if local_scheme is not None:
-        if local_scheme == "pdb:record-id":
-            return local_scheme, normalize_pdb_id(value) is not None, None
-        valid = (
-            not isinstance(value, bool)
-            and isinstance(value, (str, int))
-            and bool(re.fullmatch(r"[1-9][0-9]*", str(value).strip()))
-        )
-        return local_scheme, valid, None
-
     value = plain_text(value)
     if not value or any(ord(char) < 32 for char in value):
         return None, False, None

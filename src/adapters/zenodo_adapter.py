@@ -1,16 +1,17 @@
-"""Zenodo references, API access, and rules for native Zenodo metadata fields."""
+"""Zenodo API access and execution of its JSON searchability translation layer."""
 
 import re
 from collections.abc import Mapping
 from functools import partial
+from pathlib import Path
 from typing import Any
 from urllib.parse import unquote
 
 from ..clients.repository_client import fetch_and_evaluate
-from ..utils.checks import Rule
-from ..utils.generic_metadata_checks import evaluate_generic_metadata
-from ..utils.generic_metadata_model import EvaluationContext
 from ..utils.references import extract_doi, parse_url
+from ..utils.translation_checks import (
+    EvaluationContext, evaluate_translation, load_translation,
+)
 
 
 REPOSITORY = "zenodo"
@@ -18,47 +19,12 @@ DISPLAY_NAME = "Zenodo"
 HOSTS = {"zenodo.org", "www.zenodo.org"}
 API_BASE_URL = "https://zenodo.org/api/records"
 DOI_FIELD = "doi"
+CHECKS_PATH = Path(__file__).with_name("zenodo_checks.json")
+MEDIA_TYPE = "application/vnd.zenodo.v1+json"
 
 _RECORD_ID = re.compile(r"[1-9][0-9]*")
 _ZENODO_DOI = re.compile(r"10\.5281/zenodo\.([1-9][0-9]*)", re.IGNORECASE)
 _RECORD_PATH = re.compile(r"/(?:records?|api/records)/([1-9][0-9]*)/?")
-
-# Original field catalog; G01–G10 evaluate search tasks separately from this policy catalog.
-# Paths refer directly to GET /api/records/{id}; there is no normalized record.
-# Sources: https://developers.zenodo.org/#records
-#          https://developers.zenodo.org/#deposit-metadata
-RULES = (
-    Rule(DOI_FIELD, "DOI"),
-    Rule("metadata.title", "Title"),
-    Rule("metadata.description", "Description", html=True),
-    Rule("metadata.resource_type.type", "Resource type"),
-    Rule("metadata.publication_date", "Publication date"),
-    Rule("metadata.creators[].name", "Authors"),
-    Rule("metadata.creators[].orcid", "ORCID authors"),
-    Rule("metadata.creators[].affiliation", "Author affiliations"),
-    Rule("metadata.keywords[]", "Keywords"),
-    Rule("metadata.subjects[].term", "Subject terms"),
-    Rule("metadata.subjects[].identifier", "Subject term identifiers"),
-    Rule("metadata.subjects[].scheme", "Subject term schemes"),
-    Rule("metadata.language", "Language"),
-    Rule("metadata.version", "Version"),
-    Rule("metadata.contributors[].name", "Contributors"),
-    Rule("metadata.contributors[].type", "Contributor roles"),
-    Rule("metadata.contributors[].orcid", "ORCID contributors"),
-    Rule("metadata.contributors[].affiliation", "Contributor affiliations"),
-    Rule("metadata.related_identifiers[].identifier", "Related identifiers"),
-    Rule("metadata.related_identifiers[].relation", "Related identifier relations"),
-    Rule("metadata.related_identifiers[].scheme", "Related identifier schemes"),
-    Rule("metadata.references[]", "References"),
-    Rule("metadata.grants[].code", "Grant codes"),
-    Rule("metadata.grants[].title", "Grant titles"),
-    Rule("metadata.grants[].funder.name", "Grant funders"),
-    Rule("metadata.communities[].identifier", "Communities"),
-    Rule("metadata.notes", "Additional notes", html=True),
-    Rule("metadata.method", "Methods", html=True),
-    Rule("metadata.locations[]", "Spatial coverage"),
-    Rule("metadata.dates[]", "Temporal coverage"),
-)
 
 
 def extract_record_id(reference: str) -> str | None:
@@ -89,7 +55,7 @@ def can_handle(reference: str) -> bool:
 
 def evaluate(
     repository_response: Mapping[str, Any], *, reference: str | None = None,
-    source_url: str | None = None,
+    source_url: str | None = None, lookup=None, semantic=None, on_event=None,
 ) -> list[dict[str, Any]]:
     metadata = repository_response.get("metadata")
     if not isinstance(metadata, Mapping):
@@ -102,12 +68,15 @@ def evaluate(
         expected_identifier = extract_doi(unquote(url.path).removeprefix("/doi/"))
     context = EvaluationContext(
         reference=reference, expected_record_id=expected_id, source_url=source_url,
-        expected_identifier=expected_identifier,
+        expected_identifier=expected_identifier, expected_namespace="zenodo_record",
     )
-    return evaluate_generic_metadata(repository_response, REPOSITORY, context=context)
+    profile = load_translation(CHECKS_PATH)
+    if profile["repository"] != REPOSITORY:
+        raise ValueError("The translation layer does not describe Zenodo.")
+    return evaluate_translation(repository_response, profile, context=context, lookup=lookup, semantic=semantic, on_event=on_event)
 
 
-def fetch(reference: str) -> dict[str, Any]:
+def fetch(reference: str, *, requested_reference: str | None = None, on_event=None) -> dict[str, Any]:
     record_id = extract_record_id(reference)
     if record_id is None:
         raise ValueError("Invalid Zenodo reference.")
@@ -117,8 +86,9 @@ def fetch(reference: str) -> dict[str, Any]:
         repository=REPOSITORY,
         display_name=DISPLAY_NAME,
         source_url=source_url,
-        reference=reference,
+        reference=requested_reference or reference,
         doi_field=DOI_FIELD,
-        evaluator=partial(evaluate, reference=reference, source_url=source_url),
-        rules=RULES,
+        accept=MEDIA_TYPE,
+        evaluator=partial(evaluate, reference=requested_reference or reference, source_url=source_url, on_event=on_event),
+        on_event=on_event,
     )

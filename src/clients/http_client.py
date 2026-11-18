@@ -2,6 +2,7 @@
 
 import json
 from typing import Any
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from ..utils.references import USER_AGENT
@@ -13,12 +14,19 @@ def fetch_json(
     service: str,
     timeout: int = 30,
     token: str | None = None,
+    accept: str = "application/json",
+    user_agent: str = USER_AGENT,
+    form: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    headers = {"Accept": "application/json", "User-Agent": USER_AGENT}
+    headers = {"Accept": accept, "User-Agent": user_agent}
     if token:
         headers["Authorization"] = f"Bearer {token}"
+    data = None
+    if form is not None:
+        data = urlencode(form).encode("utf-8")
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
 
-    with urlopen(Request(url, headers=headers), timeout=timeout) as response:
+    with urlopen(Request(url, data=data, headers=headers), timeout=timeout) as response:
         raw_response = response.read()
 
     try:

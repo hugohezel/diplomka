@@ -1,0 +1,172 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "zenodo",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://developers.zenodo.org/#records",
+    "https://developers.zenodo.org/#deposit-metadata",
+    "https://github.com/zenodo/zenodo-rdm/blob/master/site/zenodo_rdm/legacy/serializers/schemas/zenodojson.py"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "id",
+        "namespace": "zenodo_record",
+        "level": "version"
+      },
+      {
+        "path": "doi",
+        "namespace": "doi",
+        "level": "version"
+      },
+      {
+        "path": "metadata.doi",
+        "namespace": "doi",
+        "level": "version"
+      },
+      {
+        "path": "links.html",
+        "namespace": "zenodo_record",
+        "level": "version"
+      },
+      {
+        "path": "metadata.alternate_identifiers[]",
+        "fields": {
+          "value": "identifier",
+          "scheme": "scheme"
+        },
+        "level": "version"
+      }
+    ],
+    "titles": [
+      "metadata.title"
+    ],
+    "descriptions": [
+      {
+        "path": "metadata.description",
+        "html": true
+      },
+      {
+        "path": "metadata.notes",
+        "html": true
+      }
+    ],
+    "terms": [
+      "metadata.keywords[]",
+      "metadata.subjects[].term"
+    ],
+    "controlled_subjects": [
+      {
+        "path": "metadata.subjects[]",
+        "fields": {
+          "id": "identifier",
+          "label": "term",
+          "scheme": "scheme"
+        }
+      }
+    ],
+    "data_types": [
+      "metadata.resource_type.type"
+    ],
+    "representations": [],
+    "entities": [],
+    "files": [
+      {
+        "path": "files[]",
+        "fields": {
+          "name": "key"
+        }
+      }
+    ],
+    "actors": [
+      {
+        "path": "metadata.creators[]",
+        "fields": {
+          "name": "name",
+          "affiliation": "affiliation"
+        },
+        "identifiers": {
+          "orcid": "orcid",
+          "gnd": "gnd"
+        },
+        "role": "Creator",
+        "name_order": "family_given"
+      },
+      {
+        "path": "metadata.contributors[]",
+        "fields": {
+          "name": "name",
+          "affiliation": "affiliation",
+          "role": "type"
+        },
+        "identifiers": {
+          "orcid": "orcid",
+          "gnd": "gnd"
+        },
+        "role": "Contributor",
+        "requires_subtype": true,
+        "name_order": "family_given"
+      }
+    ],
+    "institutions": [],
+    "dates": [
+      {
+        "path": "metadata.publication_date",
+        "event": "publication"
+      },
+      {
+        "path": "updated",
+        "event": "update"
+      }
+    ],
+    "spatial": [
+      {
+        "path": "metadata.locations[]",
+        "fields": {
+          "place": "place",
+          "latitude": "lat",
+          "longitude": "lon"
+        },
+        "scope": "dataset",
+        "crs": "EPSG:4326"
+      }
+    ],
+    "temporal": [
+      {
+        "path": "metadata.dates[]",
+        "fields": {
+          "start": "start",
+          "end": "end",
+          "event": "type"
+        },
+        "allow_open": true
+      }
+    ],
+    "production_items": [],
+    "production_text": [
+      {
+        "path": "metadata.method",
+        "html": true
+      }
+    ],
+    "relations": [
+      {
+        "path": "metadata.related_identifiers[]",
+        "fields": {
+          "target": "identifier",
+          "scheme": "scheme",
+          "predicate": "relation"
+        },
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.relations.version[].parent.pid_value",
+        "namespace": "zenodo_record",
+        "predicate": "isVersionOf",
+        "direction": "dataset_to_target"
+      }
+    ]
+  }
+}

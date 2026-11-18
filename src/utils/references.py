@@ -22,10 +22,8 @@ def parse_url(reference: str) -> SplitResult | None:
         reference: A URL string. Leading and trailing whitespace is removed.
             If the scheme is missing, ``https://`` is added only for addresses
             starting with one of these domains followed by a slash:
-            zenodo.org, www.zenodo.org, datadryad.org,
-            www.datadryad.org, figshare.com, www.figshare.com, api.figshare.com,
-            rcsb.org, www.rcsb.org, data.rcsb.org, wwpdb.org, www.wwpdb.org,
-            doi.org, or dx.doi.org. Other domains require an explicit scheme.
+            zenodo.org, www.zenodo.org, doi.org, or dx.doi.org.
+            Other domains require an explicit scheme.
 
     Returns:
         A SplitResult exposing URL parts such as ``scheme``, ``hostname``,
@@ -58,10 +56,6 @@ def parse_url(reference: str) -> SplitResult | None:
     if reference.lower().startswith(
         (
             "zenodo.org/", "www.zenodo.org/",
-            "datadryad.org/", "www.datadryad.org/",
-            "figshare.com/", "www.figshare.com/", "api.figshare.com/",
-            "rcsb.org/", "www.rcsb.org/", "data.rcsb.org/",
-            "wwpdb.org/", "www.wwpdb.org/",
             "doi.org/", "dx.doi.org/",
         )
     ):

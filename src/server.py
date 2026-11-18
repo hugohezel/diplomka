@@ -3,59 +3,88 @@ import sys
 from http.client import HTTPException
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from types import ModuleType
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 if __name__ == "__main__" and not __package__:
     # Support direct execution as well as `python -m src.server`.
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     __package__ = "src"
 
-from .adapters import dryad_adapter, figshare_adapter, pdb_adapter, zenodo_adapter
+from .adapters import icpsr_adapter, mast_adapter, metabolights_adapter, opencontext_adapter, zenodo_adapter
 from .utils.references import DOI_HOSTS, extract_doi, resolve_doi
+from .searchability.evaluator import describe_translation
+from .searchability.profile import load_translation
 
 
 HOST = "0.0.0.0"
 PORT = 8080
 MAX_REQUEST_BODY_SIZE = 64 * 1024
 HTML_PAGE = Path(__file__).with_name("index.html").read_text(encoding="utf-8")
-ADAPTERS = (zenodo_adapter, dryad_adapter, figshare_adapter, pdb_adapter)
-SERVICE_NAMES = {
-    host: adapter.DISPLAY_NAME for adapter in ADAPTERS for host in adapter.HOSTS
-}
+SERVICE_NAMES = {host: zenodo_adapter.DISPLAY_NAME for host in zenodo_adapter.HOSTS}
+SERVICE_NAMES.update({host: icpsr_adapter.DISPLAY_NAME for host in icpsr_adapter.HOSTS})
+SERVICE_NAMES.update({host: opencontext_adapter.DISPLAY_NAME for host in opencontext_adapter.HOSTS})
+SERVICE_NAMES.update({host: mast_adapter.DISPLAY_NAME for host in mast_adapter.HOSTS})
+SERVICE_NAMES.update({host: metabolights_adapter.DISPLAY_NAME for host in metabolights_adapter.HOSTS})
+SERVICE_NAMES["api.datacite.org"] = "DataCite (ICPSR metadata)"
 SERVICE_NAMES.update({host: "DOI resolver" for host in DOI_HOSTS})
+ADAPTERS = {adapter.REPOSITORY: adapter for adapter in (zenodo_adapter, icpsr_adapter, opencontext_adapter, mast_adapter, metabolights_adapter)}
 
 
 class ClientInputError(ValueError):
     """Raised when the submitted reference cannot be processed."""
 
 
-def recognize_adapter(reference: str) -> ModuleType | None:
-    return next((adapter for adapter in ADAPTERS if adapter.can_handle(reference)), None)
-
-
-def evaluate_reference(reference: str) -> dict[str, Any]:
-    adapter = recognize_adapter(reference)
-    if adapter is None:
-        doi = extract_doi(reference)
-        if doi is not None:
-            reference = resolve_doi(doi)
-            adapter = recognize_adapter(reference)
-
-    if adapter is None:
-        raise ClientInputError(
-            "Supported records are Zenodo, Dryad, Figshare and RCSB PDB. "
-            "Provide DOI, record URL or PDB accession."
-        )
-    return adapter.fetch(reference)
+def evaluate_reference(reference: str, repository: str = "auto", *, on_event=None) -> dict[str, Any]:
+    if not isinstance(repository, str) or repository not in {"auto", *ADAPTERS}:
+        raise ClientInputError("Choose Zenodo, ICPSR, Open Context, MAST, MetaboLights or automatic repository detection.")
+    requested_reference = reference
+    if repository == "mast":
+        if mast_adapter.parse_reference(reference) is None:
+            raise ClientInputError("Enter a MAST obsid, collection/obs_id, or an exact observation query URL.")
+        return mast_adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
+    if repository == "icpsr" or (repository == "auto" and icpsr_adapter.can_handle(reference)):
+        if not icpsr_adapter.can_handle(reference, allow_numeric=True):
+            raise ClientInputError("Enter an ICPSR study number, study URL or version DOI.")
+        return icpsr_adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
+    candidates = list(ADAPTERS.values()) if repository == "auto" else [ADAPTERS[repository]]
+    for adapter in candidates:
+        if adapter.can_handle(reference):
+            return adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
+    doi = extract_doi(reference)
+    if doi is not None:
+        reference = resolve_doi(doi)
+        for adapter in candidates:
+            if adapter.can_handle(reference):
+                return adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
+    raise ClientInputError(
+        "Provide a supported repository DOI/record URL, an Open Context UUID, a MAST:obsid reference or a MetaboLights MTBLS accession. "
+        "Select ICPSR or MAST when entering their numeric IDs."
+    )
 
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
-        if urlsplit(self.path).path == "/":
+        path = urlsplit(self.path).path
+        if path == "/":
             self._send_html(200, HTML_PAGE)
+            return
+        if path in {"/styles.css", "/ui.js"}:
+            mime = "text/css" if path.endswith(".css") else "text/javascript"
+            self._send_response(200, mime + "; charset=utf-8", Path(__file__).with_name(path[1:]).read_bytes())
+            return
+        if path == "/catalogue":
+            repository = parse_qs(urlsplit(self.path).query).get("repository", ["zenodo"])[0]
+            adapter = ADAPTERS.get(repository)
+            if adapter is None:
+                self._send_json(400, {"error": "Unknown repository."})
+                return
+            self._send_json(200, describe_translation(load_translation(adapter.CHECKS_PATH)))
+            return
+        if path == "/translation-schema":
+            path = Path(__file__).parent / "searchability" / "translation.schema.json"
+            self._send_json(200, json.loads(path.read_text(encoding="utf-8")))
             return
         self._send_json(404, {"error": "Not found"})
 
@@ -64,26 +93,66 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
             return
 
+        self._evaluation_stream_started = False
+        try:
+            self._evaluate()
+        except (BrokenPipeError, ConnectionResetError):
+            # Stop evaluating when the browser closes its streaming connection.
+            return
+
+    def _evaluate(self) -> None:
         try:
             body = self._read_json_body()
             reference = body.get("reference")
             if not isinstance(reference, str) or not reference.strip():
-                raise ClientInputError("Enter a DOI, record URL or PDB accession.")
+                raise ClientInputError("Enter a supported repository DOI, record URL, record ID or MetaboLights MTBLS accession.")
 
-            self._send_json(200, evaluate_reference(reference.strip()))
+            streaming = "application/x-ndjson" in self.headers.get("Accept", "").lower()
+            result = evaluate_reference(
+                reference.strip(), body.get("repository", "auto"),
+                on_event=self._send_evaluation_event if streaming else None,
+            )
+            if streaming:
+                self._send_evaluation_event({"event": "evaluation_finished", "result": result})
+            else:
+                self._send_json(200, result)
+        except (BrokenPipeError, ConnectionResetError):
+            raise
         except ClientInputError as error:
-            self._send_json(400, {"error": str(error)})
+            self._send_evaluation_error(400, str(error))
         except HTTPError as error:
             service = SERVICE_NAMES.get(urlsplit(error.url).hostname, "Repository")
             status = 404 if error.code == 404 else 502
-            self._send_json(status, {"error": f"{service} returned HTTP {error.code}."})
+            message = f"{service} returned HTTP {error.code}."
             error.close()
+            self._send_evaluation_error(status, message)
         except (URLError, TimeoutError, ConnectionError, HTTPException):
-            self._send_json(
-                502, {"error": "Repository or DOI resolver is currently unavailable."}
-            )
+            self._send_evaluation_error(502, "Repository or DOI resolver is currently unavailable.")
         except (TypeError, ValueError) as error:
-            self._send_json(502, {"error": f"Invalid service response: {error}"})
+            self._send_evaluation_error(502, f"Invalid service response: {error}")
+        except Exception as error:
+            self.log_error("Unexpected evaluation error: %s", type(error).__name__)
+            self._send_evaluation_error(500, "Evaluation failed unexpectedly.")
+
+    def _send_evaluation_event(self, event: dict[str, Any]) -> None:
+        body = (json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")
+        if not self._evaluation_stream_started:
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+            self.send_header("Cache-Control", "no-store, no-transform")
+            self.send_header("X-Accel-Buffering", "no")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+            self._evaluation_stream_started = True
+        self.wfile.write(body)
+        self.wfile.flush()
+
+    def _send_evaluation_error(self, status: int, message: str) -> None:
+        if self._evaluation_stream_started:
+            self._send_evaluation_event({"event": "evaluation_error", "error": message})
+        else:
+            self._send_json(status, {"error": message})
 
     def _read_json_body(self) -> dict[str, Any]:
         try:

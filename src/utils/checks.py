@@ -1,39 +1,36 @@
-"""Shared field, text and result helpers, plus legacy presence checks."""
+"""Shared field, text and result helpers for translation-layer checks."""
 
 import unicodedata
-from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping
 from html.parser import HTMLParser
 from typing import Any
 
 
 CheckResult = dict[str, Any]
-Metadata = Mapping[str, Any]
-
-
-@dataclass(frozen=True)
-class Rule:
-    field: str
-    label: str
-    html: bool = False
 
 
 class _HTMLText(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
+        self.hidden = 0
 
     def handle_data(self, data: str) -> None:
-        self.parts.append(data)
+        if not self.hidden:
+            self.parts.append(data)
 
     def handle_starttag(
         self, tag: str, attrs: list[tuple[str, str | None]]
     ) -> None:
-        if tag in {"p", "div", "br", "li", "h1", "h2", "h3"}:
+        if tag in {"script", "style"}:
+            self.hidden += 1
+        elif not self.hidden and tag in {"p", "div", "br", "li", "tr", "h1", "h2", "h3"}:
             self.parts.append(" ")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in {"p", "div", "li", "h1", "h2", "h3"}:
+        if tag in {"script", "style"}:
+            self.hidden = max(0, self.hidden - 1)
+        elif not self.hidden and tag in {"p", "div", "li", "tr", "h1", "h2", "h3"}:
             self.parts.append(" ")
 
 
@@ -63,11 +60,9 @@ def make_result(
     *,
     status: str,
     message: str,
-    max_points: float = 0,
-    kind: str = "required",
     **details: Any,
 ) -> CheckResult:
-    """Build a check result; only a passing check earns declared legacy points."""
+    """Build the result shared by the API and UI."""
     return {
         "group": group,
         "testId": test,
@@ -76,9 +71,6 @@ def make_result(
         "value": value,
         "status": status,
         "message": message,
-        "kind": kind,
-        "points": max_points if status == "PASS" else 0,
-        "maxPoints": max_points,
         **details,
     }
 
@@ -137,26 +129,3 @@ def has_value(value: Any, *, html: bool = False) -> bool:
     if isinstance(value, Mapping):
         return any(has_value(item, html=html) for item in value.values())
     return True
-
-
-def evaluate_rules(
-    source: Metadata, rules: Sequence[Rule]
-) -> list[CheckResult]:
-    results = []
-    for rule in rules:
-        value = read_field(source, rule.field)
-        passed = has_value(value, html=rule.html)
-        results.append(
-            {
-                "field": rule.field,
-                "label": rule.label,
-                "value": value,
-                "status": "PASS" if passed else "FAIL",
-                "message": (
-                    "Value is present."
-                    if passed
-                    else "Value is missing or empty (in at least one item)."
-                ),
-            }
-        )
-    return results
