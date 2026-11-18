@@ -1,17 +1,67 @@
-name: Deploy
+name: Deploy to production
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Validate LLM configuration
+        env:
+          LLM_URL: ${{ vars.LLM_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_TIMEOUT: ${{ vars.LLM_TIMEOUT || '60' }}
+          LLM_RESPONSE_FORMAT: ${{ vars.LLM_RESPONSE_FORMAT || 'json_schema' }}
+        run: |
+          python3 - <<'PY'
+          import math
+          import os
+          from urllib.parse import urlsplit
+
+          def fail(message):
+              print(f"::error::{message}")
+              raise SystemExit(1)
+
+          endpoint = os.environ["LLM_URL"].strip()
+          if not endpoint:
+              fail("Set the LLM_URL GitHub variable before deploying to production.")
+          try:
+              url = urlsplit(endpoint)
+              if (url.scheme not in {"http", "https"} or not url.hostname
+                      or url.username is not None or url.password is not None
+                      or url.port == 0 or any(char.isspace() for char in endpoint)):
+                  raise ValueError
+          except ValueError:
+              fail("LLM_URL must be a valid HTTP(S) endpoint without embedded credentials.")
+          try:
+              timeout = float(os.environ["LLM_TIMEOUT"])
+              if not math.isfinite(timeout) or timeout <= 0:
+                  raise ValueError
+          except ValueError:
+              fail("LLM_TIMEOUT must be a positive number of seconds.")
+          if os.environ["LLM_RESPONSE_FORMAT"].strip() not in {"json_schema", "json_object"}:
+              fail("LLM_RESPONSE_FORMAT must be json_schema or json_object.")
+          PY
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v5
@@ -45,6 +95,35 @@ jobs:
           printf '%s' "$KUBECONFIG_DATA" > "$HOME/.kube/config"
           chmod 600 "$HOME/.kube/config"
 
+      - name: Configure LLM in Kubernetes
+        env:
+          NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          LLM_URL: ${{ vars.LLM_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_TIMEOUT: ${{ vars.LLM_TIMEOUT || '60' }}
+          LLM_RESPONSE_FORMAT: ${{ vars.LLM_RESPONSE_FORMAT || 'json_schema' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          kubectl create configmap diplomka-llm-config \
+            -n "$NAMESPACE" \
+            --from-literal=LLM_URL="$LLM_URL" \
+            --from-literal=LLM_MODEL="$LLM_MODEL" \
+            --from-literal=LLM_TIMEOUT="$LLM_TIMEOUT" \
+            --from-literal=LLM_RESPONSE_FORMAT="$LLM_RESPONSE_FORMAT" \
+            --dry-run=client -o yaml \
+            | kubectl apply -n "$NAMESPACE" -f -
+
+          umask 077
+          llm_secret_file="$(mktemp "$RUNNER_TEMP/diplomka-llm-key.XXXXXX")"
+          trap 'rm -f "$llm_secret_file"' EXIT
+          printf '%s' "$LLM_API_KEY" > "$llm_secret_file"
+
+          kubectl create secret generic diplomka-llm-secret \
+            -n "$NAMESPACE" \
+            --from-file=LLM_API_KEY="$llm_secret_file" \
+            --dry-run=client -o yaml \
+            | kubectl apply -n "$NAMESPACE" -f -
+
       - name: Deploy
         env:
           HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
@@ -52,13 +131,15 @@ jobs:
         run: |
           IMAGE="cerit.io/$HARBOR_USERNAME/diplomka:${GITHUB_SHA}"
 
-          sed "s|IMAGE_PLACEHOLDER|$IMAGE|g" \
+          sed \
+            -e "s|IMAGE_PLACEHOLDER|$IMAGE|g" \
+            -e "s|DEPLOYMENT_RUN_PLACEHOLDER|${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}|g" \
             k8s/deployment.yaml \
-            > /tmp/deployment.yaml
+            > "$RUNNER_TEMP/deployment.yaml"
 
           kubectl apply \
             -n "$NAMESPACE" \
-            -f /tmp/deployment.yaml \
+            -f "$RUNNER_TEMP/deployment.yaml" \
             -f k8s/service.yaml \
             -f k8s/ingress.yaml
 

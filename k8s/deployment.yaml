@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         app: diplomka
+      annotations:
+        deployment-run: "DEPLOYMENT_RUN_PLACEHOLDER"
 
     spec:
       securityContext:
@@ -24,6 +26,12 @@ spec:
       containers:
         - name: diplomka
           image: IMAGE_PLACEHOLDER
+
+          envFrom:
+            - configMapRef:
+                name: diplomka-llm-config
+            - secretRef:
+                name: diplomka-llm-secret
 
           ports:
             - containerPort: 8080
