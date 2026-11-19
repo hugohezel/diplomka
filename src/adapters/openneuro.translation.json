@@ -1,0 +1,163 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "openneuro",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://docs.openneuro.org/api.html",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/graphql/resolvers/snapshots.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/graphql/resolvers/metadata.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/graphql/resolvers/summary.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/graphql/schema/description.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/graphql/schema/enums.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/models/dataset.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/datalad/description.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/datalad/files.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-server/src/libs/doi/metadata.ts",
+    "https://github.com/OpenNeuroOrg/openneuro/blob/8fc0c28d7fb8dddb7eb58468b081afb9933832d7/packages/openneuro-app/src/scripts/dataset/snapshot-container.tsx",
+    "https://github.com/bids-standard/bids-validator/blob/3ec05fc776b585d266fb30820c96c0f51049d21e/src/summary/summary.ts",
+    "https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files/dataset-description.html",
+    "https://bids-specification.readthedocs.io/en/stable/common-principles.html",
+    "https://bids-specification.readthedocs.io/en/stable/modality-specific-files/magnetic-resonance-imaging-data.html",
+    "https://bids-specification.readthedocs.io/en/stable/modality-specific-files/electroencephalography.html",
+    "https://bids-specification.readthedocs.io/en/stable/modality-specific-files/magnetoencephalography.html",
+    "https://docs.openneuro.org/git",
+    "https://docs.openneuro.org/policy/data_management_plans.html"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "data.snapshot.id",
+        "level": "version",
+        "namespace": "openneuro_snapshot"
+      },
+      {
+        "path": "data.snapshot.description.DatasetDOI",
+        "namespace": "doi",
+        "level": "version"
+      },
+      {
+        "path": "data.snapshot.dataset.id",
+        "level": "concept",
+        "namespace": "openneuro_dataset"
+      }
+    ],
+    "titles": [
+      "data.snapshot.description.Name"
+    ],
+    "descriptions": [
+      "data.snapshot.readme"
+    ],
+    "terms": [
+      "data.snapshot.summary.tasks[]",
+      "data.snapshot.summary.modalities[]",
+      "data.snapshot.summary.secondaryModalities[]"
+    ],
+    "controlled_subjects": [],
+    "data_types": [
+      {
+        "path": "data.snapshot.summary.modalities[]",
+        "definitions": {
+          "mri": "Magnetic resonance imaging",
+          "meg": "Magnetoencephalography",
+          "eeg": "Electroencephalography",
+          "ieeg": "Intracranial electroencephalography",
+          "pet": "Positron emission tomography",
+          "nirs": "Near-infrared spectroscopy",
+          "microscopy": "Microscopy imaging",
+          "beh": "Behavioral experimental data"
+        }
+      },
+      {
+        "path": "data.snapshot.summary.secondaryModalities[]",
+        "definitions": {
+          "mri_functional": "Functional magnetic resonance imaging",
+          "mri_structural": "Structural magnetic resonance imaging",
+          "mri_diffusion": "Diffusion-weighted magnetic resonance imaging",
+          "mri_perfusion": "Magnetic resonance perfusion imaging",
+          "pet_static": "Static positron emission tomography",
+          "pet_dynamic": "Dynamic positron emission tomography"
+        }
+      }
+    ],
+    "representations": [
+      {
+        "path": "data.snapshot.summary.modalities[]",
+        "definitions": {
+          "mri": "Magnetic resonance images",
+          "meg": "Magnetoencephalography signal time series",
+          "eeg": "Electroencephalography signal time series",
+          "ieeg": "Intracranial electroencephalography signal time series"
+        }
+      },
+      {
+        "path": "data.snapshot.summary.secondaryModalities[]",
+        "definitions": {
+          "mri_functional": "Time series of functional magnetic resonance image volumes",
+          "mri_structural": "Anatomical magnetic resonance images",
+          "mri_diffusion": "Diffusion-weighted magnetic resonance images",
+          "mri_perfusion": "Perfusion-weighted magnetic resonance images"
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "data.snapshot.files[]",
+        "fields": {
+          "name": "filename"
+        },
+        "if_any": [
+          "urls[]"
+        ],
+        "complete": false
+      }
+    ],
+    "actors": [
+      {
+        "path": "data.snapshot.description.Authors[]",
+        "role": "Creator"
+      }
+    ],
+    "institutions": [],
+    "dates": [
+      {
+        "path": "data.snapshot.created",
+        "event": "update",
+        "parser": "iso"
+      }
+    ],
+    "entities": [],
+    "variables": [],
+    "spatial": [],
+    "temporal": [],
+    "production_items": [],
+    "production_text": [
+      "data.snapshot.description.Acknowledgements"
+    ],
+    "relations": [
+      {
+        "path": "data.snapshot.related[]",
+        "fields": {
+          "target": "id",
+          "predicate": "relation"
+        },
+        "namespace": "doi",
+        "scope": "concept",
+        "direction": "dataset_to_target",
+        "maps": {
+          "predicate": {
+            "sameAs": "isIdenticalTo",
+            "source": "isDerivedFrom",
+            "derivative": "isSourceOf"
+          }
+        }
+      },
+      {
+        "path": "data.snapshot.description.ReferencesAndLinks[]",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      }
+    ]
+  }
+}

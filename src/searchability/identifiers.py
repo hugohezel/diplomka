@@ -16,13 +16,18 @@ def namespace_name(value, definitions):
 
 
 def detect_namespace(text, definitions):
+    url = parse_url(text)
+    url_value = url._replace(query="", fragment="").geturl() if url else None
     for name, definition in definitions.items():
         if any(text.casefold().startswith(prefix.casefold()) for prefix in definition.get("prefixes", [])):
             return name
-        if pattern := definition.get("prefix_pattern"):
-            url = parse_url(text)
-            if url and re.fullmatch(pattern, url._replace(query="", fragment="").geturl(), re.I):
-                return name
+        if url_value and (pattern := definition.get("prefix_pattern")) and re.fullmatch(pattern, url_value, re.I):
+            return name
+        if definition.get("detect_bare") and (
+            re.fullmatch(definition["pattern"], text, re.I)
+            or any(text.casefold().startswith(prefix.casefold()) for prefix in definition.get("replacements", {}))
+        ):
+            return name
     signatures = [
         ("doi", r"10\."), ("ark", r"ark:"), ("urn", r"urn:"),
         ("pmcid", r"PMC[0-9]"), ("orcid", r"[0-9]{4}-[0-9]{4}-[0-9]{4}-"),
@@ -33,7 +38,7 @@ def detect_namespace(text, definitions):
     for name in ("uuid", "arxiv"):
         if name in definitions and re.fullmatch(definitions[name]["pattern"], text, re.I):
             return name
-    if parse_url(text):
+    if url:
         return "url"
     return None
 

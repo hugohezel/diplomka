@@ -1,14 +1,13 @@
 const form = document.getElementById("record-form");
 const referenceInput = document.getElementById("record-reference");
-const repositorySelect = document.getElementById("repository-select");
-const repositoryLink = document.getElementById("repository-link");
 const submitButton = document.getElementById("submit-button");
 const statusOutput = document.getElementById("status");
+const repositoryOutputLabel = document.getElementById("repository-output-label");
 const repositoryOutput = document.getElementById("repository-output");
 const recordOutput = document.getElementById("record-checks-output");
 const aggregatorOutput = document.getElementById("aggregator-checks-output");
 const scoresOutput = document.getElementById("scores-output");
-let definitions;
+let previewCatalogue;
 let currentChecks = [];
 let currentGroups = [];
 let currentAggregators = [];
@@ -115,7 +114,7 @@ function renderCheck(check) {
     heading.append(badge);
   }
   const facts = element("dl", "check-facts");
-  fact(facts, "Mapped fields:", renderMappedFields(check.mappedFields));
+  if (check.mappedFields) fact(facts, "Mapped fields:", renderMappedFields(check.mappedFields));
   fact(facts, "Pass rule:", element("dd", null, check.passRule));
   fact(facts, "Searchability benefit:", element("dd", null, check.searchabilityBenefit));
   article.append(heading);
@@ -202,9 +201,14 @@ function renderAggregators(checks) {
   });
 }
 
-function pendingChecks() {
-  currentChecks = definitions ? definitions.checks.map((check) => ({...check})) : [];
-  currentGroups = definitions?.groups || [];
+function pendingChecks(catalogue) {
+  currentChecks = catalogue?.checks.map((check) => ({...check})) || [];
+  currentGroups = catalogue?.groups || [];
+  if (!catalogue) {
+    scoresOutput.replaceChildren();
+    recordOutput.replaceChildren();
+    return;
+  }
   renderScores(currentChecks);
   renderGroups(recordOutput, currentChecks, currentGroups);
 }
@@ -235,10 +239,11 @@ function updateAggregator(check) {
   renderAggregators(currentAggregators);
 }
 
-function clearRepositoryResponse(message = "") {
+function clearRepositoryResponse() {
   rawFields = [];
   highlightedFields = [];
-  repositoryOutput.textContent = message;
+  repositoryOutputLabel.textContent = "Raw response";
+  repositoryOutput.textContent = "";
   updateMappedFieldLinks();
 }
 
@@ -264,8 +269,9 @@ function renderResponseValue(value, path = [], depth = 0) {
   return node;
 }
 
-function showRepositoryResponse(response) {
+function showRepositoryResponse(response, repository) {
   clearRepositoryResponse();
+  repositoryOutputLabel.textContent = `Raw response · ${repository}`;
   repositoryOutput.replaceChildren(renderResponseValue(response));
   repositoryOutput.scrollTop = 0;
   repositoryOutput.scrollLeft = 0;
@@ -308,15 +314,15 @@ function finishEvaluation(result) {
   renderScores(result.checks.recordLevel, true);
   currentAggregators = result.checks.aggregators;
   renderAggregators(currentAggregators);
+  repositoryOutputLabel.textContent = `Raw response · ${result.repositoryName}`;
   statusOutput.textContent = result.metadataProvider ? `${result.metadataProvider} · ${result.resolvedDoi}` : "Evaluation complete.";
 }
 
 function applyEvaluationEvent(update) {
   switch (update.event) {
     case "record_loaded":
-      definitions = update.catalogue;
-      pendingChecks();
-      showRepositoryResponse(update.repositoryResponse);
+      pendingChecks(update.catalogue);
+      showRepositoryResponse(update.repositoryResponse, update.catalogue.repository);
       break;
     case "check_started": {
       updateCheck({testId: update.testId, status: "RUNNING"});
@@ -383,29 +389,29 @@ function interruptEvaluation(message) {
 
 async function loadDefinitions() {
   try {
-    const response = await fetch(`/catalogue?repository=${encodeURIComponent(repositorySelect.value)}`);
+    const response = await fetch("/catalogue?repository=auto");
     if (!response.ok) throw new Error("The fixed check catalogue could not be loaded.");
-    definitions = await response.json();
-    if (!submitButton.disabled) pendingChecks();
+    previewCatalogue = await response.json();
+    if (!currentChecks.length) pendingChecks(previewCatalogue);
   } catch (error) {
-    if (!submitButton.disabled) statusOutput.textContent = error.message;
+    if (!statusOutput.textContent) statusOutput.textContent = error.message;
   }
 }
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (submitButton.disabled) return;
   submitButton.disabled = true;
-  repositorySelect.disabled = true;
   statusOutput.classList.remove("error");
-  statusOutput.textContent = "Loading and checking…";
-  clearRepositoryResponse("Loading and checking…");
+  statusOutput.textContent = "Identifying the repository and loading the record…";
+  clearRepositoryResponse();
   currentAggregators = [];
   aggregatorOutput.replaceChildren();
-  pendingChecks();
+  pendingChecks(previewCatalogue);
   let recordLoaded = false;
   try {
     const response = await fetch("/evaluate", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/x-ndjson"},
-      body: JSON.stringify({reference: referenceInput.value.trim(), repository: repositorySelect.value})});
+      body: JSON.stringify({reference: referenceInput.value.trim()})});
     if (!response.ok) {
       const result = await response.json();
       throw new Error(result.error || "Evaluation failed.");
@@ -421,37 +427,7 @@ form.addEventListener("submit", async (event) => {
     if (!recordLoaded) clearRepositoryResponse();
   } finally {
     submitButton.disabled = false;
-    repositorySelect.disabled = false;
   }
 });
 
-function updateRepositoryLink() {
-  const repositories = {
-    zenodo: ["Zenodo", "https://zenodo.org/", "10.5281/zenodo.3357455"],
-    icpsr: ["ICPSR", "https://www.icpsr.umich.edu/sites/icpsr/home", "10.3886/ICPSR35300.v3"],
-    opencontext: ["Open Context", "https://opencontext.org/", "10.6078/M7N014GK"],
-    metabolights: ["MetaboLights", "https://www.ebi.ac.uk/metabolights/", "MTBLS1"],
-    mast: ["MAST", "https://archive.stsci.edu/", "JWST/jw01541005001_0210h_00001_nis"],
-  };
-  const [name, url, example] = repositories[repositorySelect.value];
-  repositoryLink.textContent = name;
-  repositoryLink.href = url;
-  referenceInput.placeholder = repositorySelect.value === "mast"
-    ? `MAST obsid or collection/obs_id, e.g. ${example}`
-    : repositorySelect.value === "metabolights"
-      ? `MetaboLights accession or study URL, e.g. ${example}`
-      : `${name} DOI, record URL or ID, e.g. ${example}`;
-  referenceInput.ariaLabel = referenceInput.placeholder;
-  if (Object.values(repositories).some(([, , value]) => referenceInput.value.trim() === value)) {
-    referenceInput.value = example;
-  }
-}
-
-repositorySelect.addEventListener("change", () => {
-  clearRepositoryResponse();
-  updateRepositoryLink();
-  loadDefinitions();
-});
-
-updateRepositoryLink();
 loadDefinitions();

@@ -1,0 +1,245 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "metabolights",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://ebi-metabolights.github.io/guides/",
+    "https://ebi-metabolights.github.io/guides/Study_description/",
+    "https://ebi-metabolights.github.io/guides/Sample/",
+    "https://ebi-metabolights.github.io/guides/Protocol/",
+    "https://ebi-metabolights.github.io/guides/Files/",
+    "https://isa-specs.readthedocs.io/en/latest/isatab.html",
+    "https://raw.githubusercontent.com/ISA-tools/isa-api/ba8f3b8cdf89ddfedcff533b37724b761e047cd4/isatools/resources/schemas/isa_model_version_1_0_schemas/core/investigation_schema.json",
+    "https://raw.githubusercontent.com/ISA-tools/isa-api/ba8f3b8cdf89ddfedcff533b37724b761e047cd4/isatools/resources/schemas/isa_model_version_1_0_schemas/core/study_schema.json",
+    "https://github.com/EBI-Metabolights/metabolights-utils/blob/31848abb5ee2029aae10758454f6f801bae93aae/metabolights_utils/models/metabolights/model.py",
+    "https://pypi.org/project/mhd-model/",
+    "https://www.ebi.ac.uk/ols4/ontologies/chmo",
+    "https://www.ebi.ac.uk/ols4/ontologies/ncit",
+    "https://github.com/MetabolomicsHub/mhd-model/blob/8d48c07b4113c6258b68f8474efd409b5dff63dc/mhd_model/shared/fields.py",
+    "https://datacite-metadata-schema.readthedocs.io/en/4.6/appendices/appendix-1/relationType/",
+    "https://www.ebi.ac.uk/metabolights/ws/studies/MTBLS1?investigation_only=true",
+    "https://www.ebi.ac.uk/metabolights/ws/studies/MTBLS2?investigation_only=true",
+    "https://www.ebi.ac.uk/metabolights/ws/studies/MTBLS3?investigation_only=true",
+    "https://www.ebi.ac.uk/metabolights/ws/studies/MTBLS4?investigation_only=true",
+    "https://www.ebi.ac.uk/metabolights/ws/studies/MTBLS10000?investigation_only=true"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "isaInvestigation.studies[].identifier",
+        "namespace": "metabolights_study",
+        "level": "object"
+      },
+      {
+        "path": "mtblsStudy.studyPermission.studyId",
+        "namespace": "metabolights_study",
+        "level": "object"
+      },
+      {
+        "path": "isaInvestigation.identifier",
+        "namespace": "metabolights_study",
+        "level": "object"
+      },
+      {
+        "path": "mtblsStudy.mhdAccession",
+        "namespace": "mhd_study",
+        "if_any": [""],
+        "level": "object"
+      }
+    ],
+    "titles": [
+      "isaInvestigation.studies[].title"
+    ],
+    "descriptions": [
+      {
+        "path": "isaInvestigation.studies[].description",
+        "html": true
+      }
+    ],
+    "terms": [
+      {
+        "path": "isaInvestigation.studies[].studyDesignDescriptors[]",
+        "fields": {
+          "value": "annotationValue",
+          "code": "termAccession",
+          "scheme": "termSource.name"
+        }
+      }
+    ],
+    "controlled_subjects": [
+      {
+        "path": "isaInvestigation.studies[].studyDesignDescriptors[]",
+        "if_any": ["termAccession", "termSource.name"],
+        "fields": {
+          "id": "termAccession",
+          "label": "annotationValue",
+          "scheme": "termSource.name"
+        }
+      }
+    ],
+    "data_types": [
+      "isaInvestigation.studies[].assays[].measurementType.annotationValue",
+      "isaInvestigation.studies[].assays[].technologyType.annotationValue",
+      "mtblsStudy.studyCategory"
+    ],
+    "representations": [],
+    "files": [
+      {
+        "path": "isaInvestigation.filename",
+        "if_any": [""],
+        "role": "ancillary",
+        "complete": false
+      },
+      {
+        "path": "isaInvestigation.studies[].filename",
+        "role": "ancillary",
+        "complete": false
+      },
+      {
+        "path": "isaInvestigation.studies[].assays[].filename",
+        "role": "ancillary",
+        "complete": false
+      }
+    ],
+    "actors": [
+      {
+        "path": "isaInvestigation.studies[].people[]",
+        "fields": {
+          "given": "firstName",
+          "family": "lastName",
+          "role": "roles[].annotationValue",
+          "role_text": "roles[].annotationValue",
+          "affiliation": "affiliation"
+        },
+        "type": "person",
+        "name_order": "given_family",
+        "maps": {
+          "role": {
+            "principal investigator role": "ProjectLeader",
+            "principal investigator": "ProjectLeader",
+            "Principal Investigator": "ProjectLeader",
+            "Investigator": "Researcher",
+            "Research associate": "Researcher",
+            "Bioinformatician": "Researcher",
+            "Author": "Creator",
+            "author": "Creator",
+            "first author": "Creator",
+            "Co-Author": "Creator",
+            "Corresponding Author": "ContactPerson"
+          }
+        }
+      }
+    ],
+    "institutions": [],
+    "dates": [
+      {
+        "path": "mtblsStudy.firstPublicDate",
+        "event": "publication",
+        "parser": "iso"
+      },
+      {
+        "path": "isaInvestigation.studies[].publicReleaseDate",
+        "event": "publication",
+        "parser": "iso"
+      },
+      {
+        "path": "mtblsStudy.modifiedTime",
+        "event": "update",
+        "parser": "iso"
+      },
+      {
+        "path": "mtblsStudy.revisionDatetime",
+        "event": "update",
+        "parser": "iso"
+      }
+    ],
+    "entities": [],
+    "variables": [
+      {
+        "path": "isaInvestigation.studies[].factors[]",
+        "fields": {
+          "name": "factorName",
+          "label": "factorType.annotationValue"
+        },
+        "scope": "samples represented in the study and assay tables"
+      }
+    ],
+    "spatial": [],
+    "temporal": [],
+    "production_items": [
+      {
+        "path": "isaInvestigation.studies[].assays[].technologyType",
+        "if_any": ["annotationValue"],
+        "fields": {
+          "name": "annotationValue"
+        },
+        "role": "acquisition",
+        "scope": "measurements from the containing assay"
+      },
+      {
+        "path": "isaInvestigation.studies[].assays[]",
+        "if_any": ["technologyPlatform"],
+        "fields": {
+          "name": "technologyPlatform"
+        },
+        "role": "acquisition",
+        "scope": "measurements from the containing assay"
+      },
+      {
+        "path": "isaInvestigation.studies[].protocols[]",
+        "fields": {
+          "name": "name",
+          "role": "protocolType.annotationValue"
+        },
+        "maps": {
+          "role": {
+            "Sample collection": "acquisition",
+            "Extraction": "processing",
+            "NMR sample": "processing",
+            "NMR spectroscopy": "acquisition",
+            "NMR assay": "acquisition",
+            "chromatography": "acquisition",
+            "Chromatography": "acquisition",
+            "mass spectrometry": "acquisition",
+            "Mass spectrometry": "acquisition",
+            "data transformation": "processing",
+            "Data transformation": "processing",
+            "metabolite identification": "annotation",
+            "Metabolite identification": "annotation"
+          }
+        }
+      }
+    ],
+    "production_text": [
+      {
+        "path": "isaInvestigation.studies[].protocols[].description",
+        "html": true
+      }
+    ],
+    "relations": [
+      {
+        "path": "isaInvestigation.studies[].publications[].doi",
+        "if_any": [""],
+        "namespace": "doi",
+        "predicate": "isDescribedBy",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "isaInvestigation.studies[].publications[].pubMedID",
+        "if_any": [""],
+        "namespace": "pmid",
+        "predicate": "isDescribedBy",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "isaInvestigation.studies[].protocols[].uri",
+        "if_any": [""],
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      }
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "openml",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://raw.githubusercontent.com/openml/OpenML/2ed4472e38e4cd1d49adb8eae952e4450f2e37a1/openapi/swagger.json",
+    "https://docs.openml.org/ecosystem/Rest/",
+    "https://docs.openml.org/data/specs/",
+    "https://docs.openml.org/data/",
+    "https://docs.openml.org/concepts/tagging/",
+    "https://github.com/openml/OpenML/blob/2ed4472e38e4cd1d49adb8eae952e4450f2e37a1/openml_OS/views/pages/api_new/v1/xsd/openml.data.upload.xsd",
+    "https://github.com/openml/OpenML/blob/2ed4472e38e4cd1d49adb8eae952e4450f2e37a1/openml_OS/views/pages/api_new/v1/xml/data-get.tpl.php",
+    "https://github.com/openml/OpenML/blob/2ed4472e38e4cd1d49adb8eae952e4450f2e37a1/openml_OS/core/MY_Api_Model.php",
+    "https://github.com/openml/OpenML/blob/2ed4472e38e4cd1d49adb8eae952e4450f2e37a1/openml_OS/models/api/v1/Api_data.php",
+    "https://waikato.github.io/weka-wiki/formats_and_processing/arff_stable/",
+    "https://www.openml.org/api/v1/json/data/61",
+    "https://www.openml.org/api/v1/json/data/1",
+    "https://www.openml.org/api/v1/json/data/554",
+    "https://www.openml.org/api/v1/json/data/40981",
+    "https://www.openml.org/api/v1/json/data/42165",
+    "https://docs.openml.org/reference/datasets/dataset/"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "data_set_description.id",
+        "level": "version",
+        "namespace": "openml_dataset"
+      }
+    ],
+    "titles": [
+      "data_set_description.name"
+    ],
+    "descriptions": [
+      "data_set_description.description"
+    ],
+    "terms": [
+      "data_set_description.tag[]",
+      "data_set_description.tag"
+    ],
+    "controlled_subjects": [],
+    "data_types": [],
+    "representations": [
+      {
+        "path": "data_set_description.format",
+        "maps": {
+          "value": {
+            "ARFF": "Table of instances and attributes",
+            "arff": "Table of instances and attributes",
+            "Sparse_ARFF": "Sparse table of instances and attributes",
+            "sparse_arff": "Sparse table of instances and attributes"
+          }
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "data_set_description",
+        "fields": {
+          "name": "url",
+          "format": "format"
+        },
+        "role": "data",
+        "complete": false
+      },
+      {
+        "path": "data_set_description.parquet_url",
+        "role": "data"
+      }
+    ],
+    "actors": [
+      {
+        "path": "data_set_description.creator[]",
+        "role": "Creator"
+      },
+      {
+        "path": "data_set_description.creator",
+        "role": "Creator"
+      },
+      {
+        "path": "data_set_description.contributor[]",
+        "role": "Contributor"
+      },
+      {
+        "path": "data_set_description.contributor",
+        "role": "Contributor"
+      }
+    ],
+    "institutions": [],
+    "dates": [
+      {
+        "path": "data_set_description.upload_date",
+        "event": "publication",
+        "parser": "iso"
+      }
+    ],
+    "entities": [],
+    "variables": [
+      {
+        "path": "data_set_description",
+        "fields": {
+          "name": "default_target_attribute"
+        },
+        "if_any": [
+          "default_target_attribute"
+        ],
+        "complete": false
+      }
+    ],
+    "spatial": [],
+    "temporal": [
+      {
+        "path": "data_set_description",
+        "fields": {
+          "point": "collection_date"
+        },
+        "if_any": [
+          "collection_date"
+        ],
+        "event": "collection",
+        "parser": "iso_interval"
+      }
+    ],
+    "production_items": [],
+    "production_text": [],
+    "relations": [
+      {
+        "path": "data_set_description.original_data_url",
+        "namespace": "url",
+        "predicate": "isDerivedFrom",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "data_set_description.paper_url",
+        "namespace": "url",
+        "predicate": "isDescribedBy",
+        "direction": "dataset_to_target"
+      }
+    ]
+  }
+}

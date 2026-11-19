@@ -64,6 +64,16 @@ def _slot(item, path, prefix):
     return [value for _, value, _ in selected], [pointer for pointer, _, _ in selected], True
 
 
+def _binding_items(source, spec):
+    separator = spec.get("separator")
+    for pointer, value, malformed in select(source, spec["path"]):
+        if separator and isinstance(value, str) and separator in value and not malformed:
+            for index, part in enumerate(value.split(separator)):
+                yield pointer, part.strip(), False, f"{pointer}#{index}"
+        else:
+            yield pointer, value, malformed, pointer or "/"
+
+
 def mapped_fields(profile, names):
     fields = []
     for name in names:
@@ -97,7 +107,7 @@ def read_binding(source, profile, name, *, complete=True):
         result.present = result.present or present
         if name == "files" and not present:
             result.complete = False
-        for pointer, item, malformed in select(source, path):
+        for pointer, item, malformed, item_key in _binding_items(source, spec):
             # Distinguish free annotations from controlled terms, and ignore empty
             # optional identifier columns without discarding malformed candidates.
             if "if_any" in spec and not malformed and ("fields" not in spec or isinstance(item, Mapping)):
@@ -142,7 +152,7 @@ def read_binding(source, profile, name, *, complete=True):
                                             "malformed": malformed_id or not isinstance(owner, Mapping)})
             constants = {key: value for key, value in spec.items() if key not in {"path", "fields", "identifiers"}}
             result.rows.append({
-                "key": pointer or "/", "binding": name, "values": values,
+                "key": item_key, "binding": name, "values": values,
                 "paths": paths, "supplied": supplied, "constants": constants,
                 "identifiers": identifiers, "malformed": malformed,
             })

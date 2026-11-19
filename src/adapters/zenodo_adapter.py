@@ -19,10 +19,10 @@ DISPLAY_NAME = "Zenodo"
 HOSTS = {"zenodo.org", "www.zenodo.org"}
 API_BASE_URL = "https://zenodo.org/api/records"
 DOI_FIELD = "doi"
-CHECKS_PATH = Path(__file__).with_name("zenodo_checks.json")
+CHECKS_PATH = Path(__file__).with_name("zenodo.translation.json")
 MEDIA_TYPE = "application/vnd.zenodo.v1+json"
 
-_RECORD_ID = re.compile(r"[1-9][0-9]*")
+_RECORD_ID = re.compile(r"(?:zenodo:)?([1-9][0-9]*)", re.I)
 _ZENODO_DOI = re.compile(r"10\.5281/zenodo\.([1-9][0-9]*)", re.IGNORECASE)
 _RECORD_PATH = re.compile(r"/(?:records?|api/records)/([1-9][0-9]*)/?")
 
@@ -30,8 +30,8 @@ _RECORD_PATH = re.compile(r"/(?:records?|api/records)/([1-9][0-9]*)/?")
 def extract_record_id(reference: str) -> str | None:
     """Recognize complete Zenodo references, never substrings on other domains."""
     reference = reference.strip()
-    if _RECORD_ID.fullmatch(reference):
-        return reference
+    if match := _RECORD_ID.fullmatch(reference):
+        return match[1]
 
     doi = extract_doi(reference)
     if doi is not None:

@@ -4,7 +4,6 @@ h1 { margin-bottom: 8px; }
 .hint { margin-top: 0; color: #596579; font-size: .9rem; line-height: 1.6; }
 form { display: flex; gap: 8px; margin: 24px 0 12px; }
 input { flex: 1; min-width: 0; padding: 11px 12px; }
-select { padding: 11px 12px; background: white; border: 1px solid #767676; }
 button { padding: 11px 18px; cursor: pointer; }
 button:disabled { cursor: wait; }
 #status { min-height: 24px; }

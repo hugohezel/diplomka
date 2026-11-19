@@ -1,0 +1,197 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "opencontext",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://opencontext.org/about/services",
+    "https://opencontext.org/about/technology",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/contexts/base_contexts.py",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/all_items/configs.py",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/all_items/models.py",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/all_items/representations/item.py",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/all_items/representations/metadata.py",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/all_items/representations/rep_utils.py",
+    "https://github.com/ekansa/open-context-py/blob/7d7d4caa54c7c7e6e80b9739b4a59ce1c752b760/opencontext_py/apps/all_items/representations/geojson.py",
+    "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/",
+    "https://www.rfc-editor.org/rfc/rfc7946#section-4",
+    "https://madabaplains.org/umayri/excavation-manual-2.htm",
+    "https://opencontext.org/subjects/2e6ae459-b713-4ef7-bf10-a89619fd13eb.json",
+    "https://opencontext.org/subjects/6db25699-99c6-4bf2-8fa7-852b16a9aa38.json",
+    "https://opencontext.org/subjects/e5f446c4-00e7-4919-b853-33342cdd0a2f.json",
+    "https://opencontext.org/subjects/922dc987-1650-432b-81fc-5c9e333c8272.json",
+    "https://opencontext.org/subjects/19e335e2-90a1-1031-8c0d-2a9904099ef5.json"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {"path": "id", "namespace": "opencontext_record", "level": "object"},
+      {"path": "uuid", "namespace": "uuid", "level": "object"},
+      {"path": "dc-terms:identifier[]", "level": "object"},
+      {"path": "slug", "namespace": "opencontext_slug", "level": "object"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-locus-id[].@en", "level": "object"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-legacy-id-id[].@en", "level": "object"}
+    ],
+    "titles": [
+      "dc-terms:title",
+      "label"
+    ],
+    "descriptions": [
+      {"path": "dc-terms:description[].@en", "language": "en", "html": true, "complete": false},
+      {"path": "dc-terms:abstract[].@en", "language": "en", "html": true, "complete": false},
+      {"path": "oc-gen:has-obs[].oc-pred:101-note[].@en", "language": "en", "html": true},
+      {"path": "oc-gen:has-obs[].oc-pred:179-designation[].@en", "language": "en"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-function[].@en", "language": "en"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-reason[].@en", "language": "en"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-remarks[].@en", "language": "en", "html": true},
+      {"path": "oc-gen:has-obs[].oc-pred:179-stratigraphy-remarks[].@en", "language": "en", "html": true},
+      {"path": "oc-gen:has-obs[].oc-pred:179-construction-style-note[].@en", "language": "en"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-construction-support[].@en", "language": "en"}
+    ],
+    "terms": [
+      "category",
+      "dc-terms:subject[].label",
+      "dc-terms:coverage[].label",
+      "dc-terms:spatial[].label",
+      "dc-terms:temporal[].label",
+      "oc-gen:has-obs[].oc-pred:179-locus-type[].label",
+      "oc-gen:has-obs[].oc-pred:179-age-period[].label",
+      "oc-gen:has-obs[].oc-pred:179-construction-style[].label"
+    ],
+    "controlled_subjects": [
+      {"path": "dc-terms:subject[]", "fields": {"id": "id", "label": "label"}},
+      {"path": "dc-terms:temporal[]", "fields": {"id": "id", "label": "label"}},
+      {"path": "oc-gen:has-obs[].oc-pred:179-locus-type[]", "fields": {"id": "id", "label": "label"}},
+      {"path": "oc-gen:has-obs[].oc-pred:179-age-period[]", "fields": {"id": "id", "label": "label"}},
+      {"path": "oc-gen:has-obs[].oc-pred:179-construction-style[]", "fields": {"id": "id", "label": "label"}}
+    ],
+    "data_types": [
+      {
+        "path": "category",
+        "maps": {"value": {
+          "oc-gen:cat-area": "Archaeological area record",
+          "oc-gen:cat-context": "Archaeological context record",
+          "oc-gen:cat-locus": "Archaeological locus record",
+          "oc-gen:cat-site": "Archaeological site record",
+          "oc-gen:cat-space": "Archaeological space record",
+          "oc-gen:cat-square": "Archaeological excavation square record",
+          "oc-gen:cat-structure": "Archaeological structure record"
+        }}
+      }
+    ],
+    "representations": [
+      {"path": "type", "maps": {"value": {"FeatureCollection": "Geospatial vector feature collection (GeoJSON)"}}}
+    ],
+    "files": [],
+    "actors": [
+      {
+        "path": "dc-terms:creator[]",
+        "fields": {"name": "label", "type": "type"},
+        "identifiers": {"url": "id", "orcid": "dc-terms:identifier"},
+        "role": "Creator",
+        "maps": {"type": {
+          "https://xmlns.com/foaf/spec/#term_Person": "person",
+          "http://xmlns.com/foaf/0.1/Person": "person",
+          "https://xmlns.com/foaf/spec/#term_Organization": "organization",
+          "http://xmlns.com/foaf/0.1/Organization": "organization"
+        }}
+      },
+      {
+        "path": "dc-terms:contributor[]",
+        "fields": {"name": "label", "type": "type"},
+        "identifiers": {"url": "id", "orcid": "dc-terms:identifier"},
+        "role": "Contributor",
+        "maps": {"type": {
+          "https://xmlns.com/foaf/spec/#term_Person": "person",
+          "http://xmlns.com/foaf/0.1/Person": "person",
+          "https://xmlns.com/foaf/spec/#term_Organization": "organization",
+          "http://xmlns.com/foaf/0.1/Organization": "organization"
+        }}
+      },
+      {
+        "path": "dc-terms:publisher[]",
+        "fields": {"name": "label", "type": "type"},
+        "identifiers": {"url": "id", "orcid": "dc-terms:identifier"},
+        "role": "Publisher",
+        "maps": {"type": {
+          "https://xmlns.com/foaf/spec/#term_Person": "person",
+          "http://xmlns.com/foaf/0.1/Person": "person",
+          "https://xmlns.com/foaf/spec/#term_Organization": "organization",
+          "http://xmlns.com/foaf/0.1/Organization": "organization"
+        }}
+      },
+      {
+        "path": "oc-gen:has-obs[].oc-pred:179-supervised-by[]",
+        "fields": {"name": "label"},
+        "identifiers": {"opencontext_record": "id", "orcid": "dc-terms:identifier"},
+        "role": "Supervisor",
+        "type": "person"
+      },
+      {"path": "oc-gen:has-obs[].oc-pred:179-supervisor[].@en", "role": "Supervisor", "type": "person"}
+    ],
+    "institutions": [],
+    "dates": [
+      {"path": "dc-terms:issued", "event": "publication", "parser": "iso"},
+      {"path": "dc-terms:modified", "event": "update", "parser": "iso"}
+    ],
+    "entities": [
+      {"path": "", "fields": {"value": "label", "id": "id"}}
+    ],
+    "spatial": [
+      {
+        "path": "features[]",
+        "fields": {"geometry": "geometry", "place": "properties.reference_label"},
+        "scope": "dataset",
+        "crs": "WGS84"
+      },
+      {"path": "oc-gen:has-contexts[]", "fields": {"place": "label"}, "scope": "dataset"},
+      {"path": "dc-terms:spatial[]", "fields": {"place": "label"}, "scope": "dataset"}
+    ],
+    "temporal": [
+      {
+        "path": "features[].when",
+        "fields": {"start": "start", "end": "stop"},
+        "event": "coverage",
+        "parser": "iso_extended"
+      },
+      {
+        "path": "oc-gen:has-obs[]",
+        "fields": {"start": "oc-pred:179-start-date[0]", "end": "oc-pred:179-end-date[0]"},
+        "if_any": ["oc-pred:179-start-date[]", "oc-pred:179-end-date[]"],
+        "event": "collection",
+        "parser": "iso"
+      }
+    ],
+    "production_items": [],
+    "production_text": [],
+    "relations": [
+      {"path": "dc-terms:isPartOf[]", "fields": {"target": "id"}, "predicate": "isPartOf", "direction": "dataset_to_target"},
+      {"path": "dc-terms:hasPart[]", "fields": {"target": "id"}, "predicate": "hasPart", "direction": "dataset_to_target"},
+      {"path": "dc-terms:isReferencedBy[]", "fields": {"target": "id"}, "predicate": "isReferencedBy", "direction": "dataset_to_target"},
+      {"path": "dc-terms:references[]", "fields": {"target": "id"}, "predicate": "references", "direction": "dataset_to_target"},
+      {"path": "dc-terms:source[]", "fields": {"target": "id"}, "predicate": "isDerivedFrom", "direction": "dataset_to_target"},
+      {"path": "dc-terms:isVersionOf[]", "fields": {"target": "id"}, "predicate": "isVersionOf", "direction": "dataset_to_target"},
+      {"path": "dc-terms:hasVersion[]", "fields": {"target": "id"}, "predicate": "hasVersion", "direction": "dataset_to_target"},
+      {"path": "dc-terms:isReplacedBy[]", "fields": {"target": "id"}, "predicate": "isObsoletedBy", "direction": "dataset_to_target"},
+      {"path": "dc-terms:replaces[]", "fields": {"target": "id"}, "predicate": "obsoletes", "direction": "dataset_to_target"},
+      {"path": "dc-terms:relation[]", "fields": {"target": "id"}, "predicate": "relation", "direction": "dataset_to_target"},
+      {"path": "oc-gen:has-contexts[]", "fields": {"target": "id"}, "predicate": "isPartOf", "direction": "dataset_to_target"},
+      {"path": "features[].properties.reference_uri", "predicate": "hasSpatialCoverageSource", "direction": "dataset_to_target"},
+      {"path": "features[].when.reference_uri", "predicate": "hasTemporalCoverageSource", "direction": "dataset_to_target"},
+      {"path": "oc-pred:oc-gen-has-geo-overlay[]", "fields": {"target": "id"}, "predicate": "hasGeoOverlay", "direction": "dataset_to_target"},
+      {
+        "path": "oc-gen:has-obs[].oc-pred:oc-gen-links[]",
+        "fields": {"target": "id"},
+        "predicate": "relation",
+        "direction": "dataset_to_target",
+        "complete": false
+      },
+      {"path": "oc-gen:has-obs[].oc-pred:oc-gen-contains[]", "fields": {"target": "id"}, "predicate": "hasPart", "direction": "dataset_to_target"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-has-field-photo-sheet[]", "fields": {"target": "id"}, "predicate": "isDocumentedBy", "direction": "dataset_to_target"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-has-field-photo[]", "fields": {"target": "id"}, "predicate": "isDocumentedBy", "direction": "dataset_to_target"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-abutted-by[]", "fields": {"target": "id"}, "predicate": "abuttedBy", "direction": "dataset_to_target"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-sealed-against-by[]", "fields": {"target": "id"}, "predicate": "sealedAgainstBy", "direction": "dataset_to_target"},
+      {"path": "oc-gen:has-obs[].oc-pred:179-under[]", "fields": {"target": "id"}, "predicate": "under", "direction": "dataset_to_target"}
+    ]
+  }
+}

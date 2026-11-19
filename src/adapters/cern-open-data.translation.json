@@ -1,0 +1,371 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "cern-open-data",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://github.com/cernopendata/cernopendata-portal/blob/f3b2460e65403a18805fbde071d3b4e0cb16d116/cernopendata/jsonschemas/records/record-v1.0.0.json",
+    "https://github.com/cernopendata/cernopendata-portal/blob/f3b2460e65403a18805fbde071d3b4e0cb16d116/cernopendata/api.py",
+    "https://github.com/cernopendata/cernopendata-portal/blob/f3b2460e65403a18805fbde071d3b4e0cb16d116/cernopendata/modules/datacite/serializers.py",
+    "https://opendata.cern.ch/docs/about",
+    "https://opendata.cern.ch/docs/cms-getting-started-aod",
+    "https://opendata.cern.ch/docs/cms-getting-started-nanoaod",
+    "https://opendata.cern.ch/docs/cms-mc-production-overview",
+    "https://opendata.cern.ch/docs/about-alice",
+    "https://opendata.cern.ch/docs/stripping21r1-index",
+    "https://opendata.cern.ch/record/13156",
+    "https://opendata.cern.ch/api/records/28066",
+    "https://opendata.cern.ch/api/records/6004",
+    "https://github.com/lhcb/starterkit-lessons/blob/master/first-analysis-steps/dataflow.md",
+    "https://opendata.cern.ch/record/15005",
+    "https://opendata.cern.ch/record/1366",
+    "https://opendata.cern.ch/api/records/30565",
+    "https://datacite-metadata-schema.readthedocs.io/en/4.7/appendices/appendix-1/relationType/"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "metadata.doi",
+        "namespace": "doi",
+        "level": "version"
+      },
+      {
+        "path": "metadata.recid",
+        "namespace": "cern_record",
+        "level": "version"
+      },
+      {
+        "path": "links.self",
+        "namespace": "url",
+        "level": "version"
+      },
+      {
+        "path": "metadata.pids.oai.id",
+        "namespace": "cern_record",
+        "level": "version"
+      }
+    ],
+    "titles": [
+      "metadata.title",
+      "metadata.title_additional"
+    ],
+    "descriptions": [
+      {
+        "path": "metadata.abstract.description",
+        "html": true
+      },
+      {
+        "path": "metadata.methodology.description",
+        "html": true
+      }
+    ],
+    "terms": [
+      "metadata.keywords[]",
+      "metadata.categories.primary",
+      "metadata.categories.secondary[]",
+      "metadata.experiment[]",
+      "metadata.accelerator",
+      "metadata.signature[]",
+      "metadata.collision_information.type",
+      "metadata.collision_information.energy",
+      "metadata.run_period[]",
+      {
+        "path": "metadata.run_numbers[]",
+        "fields": {
+          "code": ""
+        }
+      },
+      "metadata.magnet_polarity",
+      "metadata.stripping.stream",
+      "metadata.stripping.version"
+    ],
+    "controlled_subjects": [],
+    "data_types": [
+      "metadata.type.secondary[]"
+    ],
+    "representations": [
+      {
+        "path": "metadata.distribution.formats[]",
+        "maps": {
+          "value": {
+            "aod": "Analysis Object Data (AOD) organized as reconstructed event objects",
+            "aodsim": "AODSIM event records with reconstructed objects and simulation information",
+            "miniaod": "MiniAOD compact reconstructed event records",
+            "miniaodsim": "MiniAODSIM compact reconstructed event records for simulated events",
+            "nanoaod": "NanoAOD ROOT trees with branches for event quantities",
+            "nanoaodsim": "NanoAODSIM ROOT trees with branches for simulated event quantities",
+            "esd": "ALICE Event Summary Data (ESD) with reconstructed tracks and event properties",
+            "MDST": "LHCb MicroDST event records containing candidates selected by stripping and their associated objects",
+            "root": "",
+            "zip": ""
+          }
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "metadata.files[]",
+        "fields": {
+          "name": "key"
+        }
+      },
+      {
+        "path": "metadata._file_indices[].files[]",
+        "fields": {
+          "name": "filename"
+        }
+      }
+    ],
+    "actors": [
+      {
+        "path": "metadata.authors[]",
+        "fields": {
+          "name": "name",
+          "affiliation": "affiliation"
+        },
+        "identifiers": {
+          "orcid": "orcid"
+        },
+        "role": "Creator"
+      },
+      {
+        "path": "metadata.collaboration.name",
+        "role": "Creator",
+        "type": "organization"
+      },
+      {
+        "path": "metadata.publisher",
+        "role": "Publisher",
+        "type": "organization"
+      }
+    ],
+    "institutions": [],
+    "dates": [
+      {
+        "path": "metadata.date_published",
+        "event": "publication",
+        "parser": "year"
+      },
+      {
+        "path": "updated",
+        "event": "update",
+        "parser": "iso"
+      }
+    ],
+    "entities": [
+      {
+        "path": "metadata.collision_information.type",
+        "maps": {
+          "value": {
+            "pp": "proton-proton collisions",
+            "pPb": "proton-lead collisions",
+            "PbPb": "lead-lead collisions"
+          }
+        }
+      },
+      "metadata.signature[]"
+    ],
+    "variables": [
+      {
+        "path": "metadata.dataset_semantics[]",
+        "fields": {
+          "name": "variable",
+          "label": "description"
+        }
+      }
+    ],
+    "spatial": [],
+    "temporal": [
+      {
+        "path": "metadata.date_created[]",
+        "fields": {
+          "point": ""
+        },
+        "event": "coverage",
+        "parser": "year"
+      }
+    ],
+    "production_items": [
+      {
+        "path": "metadata",
+        "fields": {
+          "name": "accelerator"
+        },
+        "if_any": ["accelerator"]
+      },
+      {
+        "path": "metadata.methodology.steps[]",
+        "fields": {
+          "name": "type",
+          "role": "type"
+        },
+        "if_any": ["type"],
+        "scope": "dataset",
+        "maps": {
+          "role": {
+            "GEN": "generation",
+            "LHE GEN": "generation",
+            "SIM": "simulation",
+            "GEN SIM": "simulation",
+            "DIGI2RAW": "digitization",
+            "HLT": "processing",
+            "RECO": "processing",
+            "AODSIM": "processing",
+            "MINIAODSIM": "processing",
+            "NANOAODSIM": "processing"
+          }
+        }
+      },
+      {
+        "path": "metadata.stripping",
+        "fields": {
+          "name": "line"
+        },
+        "if_any": ["line"],
+        "role": "processing",
+        "scope": "events selected for the dataset"
+      }
+    ],
+    "production_text": [
+      {
+        "path": "metadata.methodology.description",
+        "html": true
+      },
+      {
+        "path": "metadata.methodology.note.description",
+        "html": true
+      },
+      {
+        "path": "metadata.methodology.steps[].note.description",
+        "html": true
+      },
+      "metadata.methodology.steps[].release",
+      "metadata.methodology.steps[].generators[]",
+      {
+        "path": "metadata.pileup.description",
+        "html": true
+      },
+      {
+        "path": "metadata.validation.description",
+        "html": true
+      }
+    ],
+    "relations": [
+      {
+        "path": "metadata.relations[]",
+        "fields": {
+          "target": "doi",
+          "predicate": "type"
+        },
+        "if_any": ["doi"],
+        "namespace": "doi",
+        "direction": "dataset_to_target",
+        "maps": {
+          "predicate": {
+            "isChildOf": "isDerivedFrom"
+          }
+        }
+      },
+      {
+        "path": "metadata.relations[]",
+        "fields": {
+          "target": "recid",
+          "predicate": "type"
+        },
+        "if_any": ["recid"],
+        "namespace": "cern_record",
+        "direction": "dataset_to_target",
+        "maps": {
+          "predicate": {
+            "isChildOf": "isDerivedFrom"
+          }
+        }
+      },
+      {
+        "path": "metadata.abstract.links[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.abstract.links[].url",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.use_with.links[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.use_with.links[].url",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.methodology.links[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.methodology.links[].url",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.methodology.steps[].configuration_files[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.methodology.steps[].configuration_files[].url",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.pileup.links[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.pileup.links[].url",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.validation.links[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.validation.links[].url",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.note.links[].recid",
+        "namespace": "cern_record",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "metadata.dataset_semantics_files.url",
+        "namespace": "url",
+        "predicate": "isDocumentedBy",
+        "direction": "dataset_to_target"
+      }
+    ]
+  }
+}

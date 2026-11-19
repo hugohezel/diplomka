@@ -7,7 +7,8 @@
   "sources": [
     "https://developers.zenodo.org/#records",
     "https://developers.zenodo.org/#deposit-metadata",
-    "https://github.com/zenodo/zenodo-rdm/blob/master/site/zenodo_rdm/legacy/serializers/schemas/zenodojson.py"
+    "https://github.com/zenodo/zenodo-rdm/blob/master/site/zenodo_rdm/legacy/serializers/schemas/zenodojson.py",
+    "https://zenodo.org/api/records/1319069"
   ],
   "bindings": {
     "dataset_ids": [

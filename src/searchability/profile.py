@@ -29,7 +29,7 @@ BINDING_SLOTS = {
 BINDING_OPTIONS = {
     "path", "fields", "identifiers", "namespace", "level", "scope", "html",
     "role", "event", "direction", "requires_subtype", "allow_open", "crs",
-    "parser", "name_order", "complete", "language", "maps", "definitions", "type", "predicate", "if_any",
+    "parser", "name_order", "complete", "language", "maps", "definitions", "type", "predicate", "if_any", "separator",
 }
 ROOT_OPTIONS = {"$schema", "version", "repository", "catalogue", "registries", "sources", "bindings"}
 BOOLEAN_OPTIONS = {"html", "requires_subtype", "allow_open", "complete"}
@@ -71,6 +71,9 @@ def validate_translation(profile):
             if not isinstance(spec, dict) or set(spec) - BINDING_OPTIONS or not isinstance(spec.get("path"), str):
                 raise ValueError(f"Invalid {name} binding.")
             path_parts(spec["path"])
+            if "separator" in spec and (not isinstance(spec["separator"], str) or not spec["separator"]
+                                        or "fields" in spec or "identifiers" in spec):
+                raise ValueError("A separator requires a nonempty delimiter and a scalar binding.")
             for option in BOOLEAN_OPTIONS & spec.keys():
                 if not isinstance(spec[option], bool):
                     raise ValueError(f"{name}.{option} must be boolean.")

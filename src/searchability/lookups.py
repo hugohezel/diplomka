@@ -12,6 +12,14 @@ from ..utils.vocabularies import FOS
 from .model import outcome
 
 
+_OLS_ONTOLOGIES = {"efo", "chebi", "pato", "chmo", "ncit"}
+
+
+def _ols_iri(scheme, code):
+    base = "http://www.ebi.ac.uk/efo/" if scheme == "efo" else "http://purl.obolibrary.org/obo/"
+    return base + code
+
+
 def _labels(values, language=None):
     return [{"value": value, "language": language} for value in values if plain_text(value)]
 
@@ -114,16 +122,25 @@ class LookupService:
             label = FOS.get(identifier)
             return outcome("PASS" if label else "FAIL", "Look up the OECD FOS 2007 snapshot.",
                            vocabulary=selected, labels=_labels([label], "en"), completeLabels=True, languages=["en"])
-        patterns = {"lcsh": r"sh[0-9]+", "efo": r"EFO[:_][0-9]+", "mesh": r"[DC][0-9]{6,9}", "gnd": r"[0-9]+(?:-[0-9X])?"}
-        if not re.fullmatch(patterns[selected], code, re.I):
+        patterns = {"lcsh": r"sh[0-9]+", "mesh": r"[DC][0-9]{6,9}", "gnd": r"[0-9]+(?:-[0-9X])?",
+                    "ncbi_taxonomy": r"[1-9][0-9]*"}
+        if selected in _OLS_ONTOLOGIES:
+            code = code.replace(":", "_").upper()
+            pattern = selected.upper() + (r"_C[0-9]+" if selected == "ncit" else r"_[0-9]+")
+        else:
+            pattern = patterns[selected]
+        if not re.fullmatch(pattern, code, re.I):
             return outcome("FAIL", "The concept identifier contradicts its vocabulary syntax.")
-        code = code.replace(":", "_").upper() if selected in {"efo", "mesh"} else code
+        if selected == "mesh":
+            code = code.upper()
         urls = {
             "lcsh": f"https://id.loc.gov/authorities/subjects/{code}.json",
-            "efo": "https://www.ebi.ac.uk/ols4/api/ontologies/efo/terms?" + urlencode({"iri": f"http://www.ebi.ac.uk/efo/{code}"}),
             "mesh": f"https://id.nlm.nih.gov/mesh/{code}.json",
             "gnd": f"https://lobid.org/gnd/{code}.json",
+            "ncbi_taxonomy": f"https://www.ebi.ac.uk/ena/taxonomy/rest/tax-id/{code}",
         }
+        if selected in _OLS_ONTOLOGIES:
+            urls[selected] = f"https://www.ebi.ac.uk/ols4/api/ontologies/{selected}/terms?" + urlencode({"iri": _ols_iri(selected, code)})
         response = deepcopy(self.fetch(urls[selected], self.registry["retrieval"]))
         data = response.pop("data", None)
         if response["status"] != "PASS":
@@ -137,15 +154,23 @@ class LookupService:
 
     @staticmethod
     def _concept_payload(scheme, code, data):
-        if scheme == "efo" and isinstance(data, dict):
+        if scheme == "ncbi_taxonomy":
+            if isinstance(data, list):
+                if not data:
+                    return [], True, False
+                data = data[0] if len(data) == 1 else None
+            if isinstance(data, dict) and str(data.get("taxId")) == code and plain_text(data.get("scientificName")):
+                return _labels([data["scientificName"], data.get("commonName")]), False, True
+        if scheme in _OLS_ONTOLOGIES and isinstance(data, dict):
             if data.get("page", {}).get("totalElements") == 0:
                 return [], True, False
             terms = data.get("_embedded", {}).get("terms", [])
-            term = next((term for term in terms if isinstance(term, dict) and str(term.get("iri", "")).rsplit("/", 1)[-1] == code), None)
+            term = next((term for term in terms if isinstance(term, dict) and term.get("iri") == _ols_iri(scheme, code)), None)
             if term:
-                if not isinstance(term.get("synonyms", []), list):
+                synonyms = term.get("synonyms")
+                if not plain_text(term.get("label")) or (synonyms is not None and not isinstance(synonyms, list)):
                     return [], False, None
-                return _labels([term.get("label"), *term.get("synonyms", [])], "en"), "synonyms" in term, True
+                return _labels([term["label"], *(synonyms or [])], "en"), isinstance(synonyms, list), True
         if scheme == "gnd" and isinstance(data, dict) and data.get("gndIdentifier") == code:
             if not isinstance(data.get("variantName", []), list):
                 return [], False, None

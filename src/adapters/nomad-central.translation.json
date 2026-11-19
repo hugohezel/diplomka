@@ -1,0 +1,314 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "nomad-central",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://nomad-lab.eu/prod/v1/api/v1/openapi.json",
+    "https://docs.nomad-lab.eu/explanation/data.html",
+    "https://docs.nomad-lab.eu/reference/code_guidelines.html",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/datamodel/datamodel.py",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/datamodel/data.py",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/datamodel/results.py",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/files/uploads.py#L1332-L1366",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/utils/__init__.py",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/app/v1/routers/datasets.py",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/nomad/processing/data.py",
+    "https://github.com/nomad-coe/nomad/blob/f7bdbca268648acd6afab007334ecf53738bc038/gui/src/components/nav/Routes.js"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "data.entry_id",
+        "level": "object",
+        "namespace": "nomad_entry"
+      },
+      {
+        "path": "data.calc_id",
+        "level": "object",
+        "namespace": "nomad_entry"
+      },
+      {
+        "path": "data.pid",
+        "level": "object",
+        "namespace": "nomad_pid"
+      }
+    ],
+    "titles": [
+      "data.entry_name"
+    ],
+    "descriptions": [
+      "data.comment"
+    ],
+    "terms": [
+      "data.results.material.elements[]",
+      "data.results.material.material_name",
+      "data.results.material.chemical_formula_descriptive",
+      "data.results.material.chemical_formula_reduced",
+      "data.results.material.chemical_formula_iupac",
+      "data.results.material.structural_type",
+      "data.results.material.dimensionality",
+      "data.results.material.functional_type[]",
+      "data.results.material.compound_type[]",
+      "data.results.material.symmetry.crystal_system",
+      "data.results.material.symmetry.space_group_symbol",
+      "data.results.method.method_name",
+      "data.results.method.workflow_name",
+      "data.results.method.simulation.program_name",
+      "data.results.method.simulation.dft.basis_set_type",
+      "data.results.method.simulation.dft.xc_functional_type",
+      "data.results.method.simulation.dft.xc_functional_names[]"
+    ],
+    "controlled_subjects": [],
+    "data_types": [
+      "data.entry_type",
+      {
+        "path": "data.domain",
+        "maps": {
+          "value": {
+            "dft": "Computational materials simulation"
+          }
+        }
+      }
+    ],
+    "representations": [
+      {
+        "path": "data.results.properties.available_properties[]",
+        "maps": {
+          "value": {
+            "band_structure_electronic": "Electronic band structure as a function of wave vector",
+            "band_structure_phonon": "Phonon dispersion as a function of wave vector",
+            "dos_electronic": "Electronic density of states as a function of energy",
+            "dos_electronic_new": "Electronic density of states as a function of energy",
+            "dos_phonon": "Phonon density of states",
+            "energy_volume_curve": "Energy versus volume curve",
+            "geometry_optimization.trajectory": "Geometry optimization trajectory",
+            "mean_squared_displacement": "Mean squared displacement as a function of time",
+            "radial_distribution_function": "Radial distribution function as a function of separation distance",
+            "spectra": "Spectral data",
+            "structure_conventional": "Atomic structure of the conventional cell",
+            "structure_optimized": "Optimized atomic structure",
+            "structure_original": "Original atomic structure",
+            "structure_primitive": "Atomic structure of the primitive cell",
+            "trajectory": "Trajectory data"
+          }
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "data.files[]",
+        "complete": false
+      }
+    ],
+    "actors": [
+      {
+        "path": "data.authors[]",
+        "fields": {
+          "name": "name"
+        },
+        "identifiers": {
+          "uuid": "user_id"
+        },
+        "role": "Creator",
+        "type": "person"
+      }
+    ],
+    "institutions": [],
+    "dates": [
+      {
+        "path": "data.publish_time",
+        "event": "publication",
+        "parser": "iso"
+      }
+    ],
+    "entities": [
+      {
+        "path": "data.results.material",
+        "fields": {
+          "value": "chemical_formula_descriptive",
+          "id": "material_id"
+        },
+        "if_any": [
+          "chemical_formula_descriptive",
+          "material_id"
+        ]
+      },
+      "data.results.material.material_name",
+      "data.optimade.chemical_formula_descriptive"
+    ],
+    "variables": [
+      {
+        "path": "data.results.properties.electronic.band_gap[]",
+        "fields": {
+          "code": "index"
+        },
+        "if_any": [
+          "index",
+          "value"
+        ],
+        "scope": "Material studied in the entry",
+        "definitions": {
+          "0": "Electronic band gap for spin channel 0",
+          "1": "Electronic band gap for spin channel 1"
+        },
+        "complete": false
+      },
+      {
+        "path": "data.results.properties.mechanical.bulk_modulus[]",
+        "fields": {
+          "code": "type"
+        },
+        "if_any": [
+          "type",
+          "value"
+        ],
+        "scope": "Material studied in the entry",
+        "definitions": {
+          "mie_gruneisen": "Bulk modulus from a Mie–Grüneisen equation of state",
+          "pack_evans_james": "Bulk modulus from a Pack–Evans–James equation of state",
+          "vinet": "Bulk modulus from a Vinet equation of state",
+          "tait": "Bulk modulus from a Tait equation of state",
+          "birch_euler": "Bulk modulus from a Birch–Euler equation of state",
+          "pourier_tarantola": "Bulk modulus from a Poirier–Tarantola equation of state",
+          "birch_lagrange": "Bulk modulus from a Birch–Lagrange equation of state",
+          "birch_murnaghan": "Bulk modulus from a Birch–Murnaghan equation of state",
+          "murnaghan": "Bulk modulus from a Murnaghan equation of state",
+          "voigt_average": "Voigt average bulk modulus",
+          "reuss_average": "Reuss average bulk modulus",
+          "voigt_reuss_hill_average": "Voigt–Reuss–Hill average bulk modulus"
+        }
+      },
+      {
+        "path": "data.results.properties.mechanical.shear_modulus[]",
+        "fields": {
+          "code": "type"
+        },
+        "if_any": [
+          "type",
+          "value"
+        ],
+        "scope": "Material studied in the entry",
+        "definitions": {
+          "voigt_average": "Voigt average shear modulus",
+          "reuss_average": "Reuss average shear modulus",
+          "voigt_reuss_hill_average": "Voigt–Reuss–Hill average shear modulus"
+        }
+      },
+      {
+        "path": "data.results.properties.structural.radial_distribution_function[]",
+        "fields": {
+          "code": "type",
+          "entity": "label"
+        },
+        "if_any": [
+          "type"
+        ],
+        "scope": "Material studied in the entry",
+        "definitions": {
+          "atomic": "Atomic radial distribution function",
+          "molecular": "Molecular radial distribution function"
+        }
+      },
+      {
+        "path": "data.results.properties.dynamical.mean_squared_displacement[]",
+        "fields": {
+          "code": "type",
+          "entity": "label"
+        },
+        "if_any": [
+          "type"
+        ],
+        "scope": "Material studied in the entry",
+        "definitions": {
+          "atomic": "Atomic mean squared displacement",
+          "molecular": "Molecular mean squared displacement"
+        }
+      }
+    ],
+    "spatial": [],
+    "temporal": [],
+    "production_items": [
+      {
+        "path": "data.results.method.simulation",
+        "fields": {
+          "name": "program_name"
+        },
+        "if_any": [
+          "program_name"
+        ],
+        "role": "simulation",
+        "scope": "Computational results in this entry"
+      },
+      {
+        "path": "data.results.method",
+        "fields": {
+          "name": "method_name"
+        },
+        "if_any": [
+          "method_name"
+        ],
+        "role": "generation",
+        "scope": "Computational results in this entry"
+      },
+      {
+        "path": "data.results",
+        "fields": {
+          "name": "method.workflow_name"
+        },
+        "if_any": [
+          "method.workflow_name"
+        ],
+        "role": "generation",
+        "scope": "Computational results in this entry"
+      },
+      {
+        "path": "data",
+        "fields": {
+          "name": "parser_name"
+        },
+        "if_any": [
+          "parser_name"
+        ],
+        "role": "processing",
+        "scope": "NOMAD processed entry data"
+      }
+    ],
+    "production_text": [],
+    "relations": [
+      {
+        "path": "data.references[]",
+        "namespace": "url",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "data.entry_references[].target_reference",
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "data.datasets[].dataset_id",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target",
+        "namespace": "nomad_dataset"
+      },
+      {
+        "path": "data.datasets[].doi",
+        "if_any": [
+          ""
+        ],
+        "namespace": "doi",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "data.upload_id",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target",
+        "namespace": "nomad_upload"
+      }
+    ]
+  }
+}

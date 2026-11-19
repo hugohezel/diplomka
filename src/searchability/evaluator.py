@@ -30,21 +30,25 @@ RECIPES = {
 
 
 def _public_definition(definition, profile):
-    return {"testId": definition["id"], "group": definition["group"], "label": definition["title"],
-            "decisionMethod": definition["type"], "passRule": definition["passRule"],
-            "searchabilityBenefit": definition["searchabilityBenefit"],
-            "duplicateOf": deepcopy(definition["duplicateOf"]),
-            "fujiCounterparts": deepcopy(definition["fujiCounterparts"]),
-            "fujiOverlap": definition.get("fujiOverlap"),
-            "mappedFields": mapped_fields(profile, definition["bindings"])}
+    public = {"testId": definition["id"], "group": definition["group"], "label": definition["title"],
+              "decisionMethod": definition["type"], "passRule": definition["passRule"],
+              "searchabilityBenefit": definition["searchabilityBenefit"],
+              "duplicateOf": deepcopy(definition["duplicateOf"]),
+              "fujiCounterparts": deepcopy(definition["fujiCounterparts"]),
+              "fujiOverlap": definition.get("fujiOverlap")}
+    if profile is not None:
+        public["mappedFields"] = mapped_fields(profile, definition["bindings"])
+    return public
 
 
-def describe_translation(profile):
-    """Expose stable UI definitions before any record is evaluated."""
-    validate_translation(profile)
+def describe_translation(profile=None):
+    """Describe the fixed checks, adding native field mappings when the repository is known."""
+    if profile is not None:
+        validate_translation(profile)
     fixed = catalogue()
-    return {"version": fixed["version"], "registryVersion": profile["registries"],
-            "repository": profile["repository"], "groups": fixed["groups"], "operations": fixed["operations"],
+    return {"version": fixed["version"], "registryVersion": registries()["version"],
+            "repository": profile["repository"] if profile is not None else None,
+            "groups": fixed["groups"], "operations": fixed["operations"],
             "checks": [{**_public_definition(definition, profile), "plannedSteps": definition["steps"]} for definition in fixed["checks"]]}
 
 

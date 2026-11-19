@@ -1,0 +1,237 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "pangaea",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://wiki.pangaea.de/wiki/Data_Access_and_Reuse",
+    "https://wiki.pangaea.de/wiki/Metaheader",
+    "https://wiki.pangaea.de/wiki/Publication_types",
+    "https://wiki.pangaea.de/wiki/Term_catalogue",
+    "https://wiki.pangaea.de/wiki/Method",
+    "https://schema.org/Dataset",
+    "https://schema.org/PropertyValue",
+    "https://schema.org/GeoShape",
+    "https://schema.org/temporalCoverage",
+    "https://schema.org/citation",
+    "https://schema.org/isBasedOn",
+    "https://www.w3.org/TR/json-ld11/#reverse-properties",
+    "https://docs.mlcommons.org/croissant/docs/croissant-spec.html",
+    "https://doi.pangaea.de/10.1594/PANGAEA.841672",
+    "https://doi.pangaea.de/10.1594/PANGAEA.941445",
+    "https://doi.pangaea.de/10.1594/PANGAEA.804876",
+    "https://www.ebi.ac.uk/ols4/ontologies/chebi",
+    "https://www.ebi.ac.uk/ols4/ontologies/pato"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "identifier",
+        "namespace": "doi",
+        "level": "object"
+      },
+      {
+        "path": "url",
+        "namespace": "url",
+        "level": "object"
+      }
+    ],
+    "titles": [
+      "name"
+    ],
+    "descriptions": [
+      "description",
+      "abstract",
+      "comment"
+    ],
+    "terms": [
+      "keywords",
+      "variableMeasured[].name",
+      "variableMeasured[].subjectOf.hasDefinedTerm.name",
+      "variableMeasured[].subjectOf.hasDefinedTerm[].name"
+    ],
+    "controlled_subjects": [
+      {
+        "path": "variableMeasured[].subjectOf",
+        "fields": {
+          "id": "hasDefinedTerm.identifier",
+          "label": "hasDefinedTerm.name"
+        },
+        "if_any": [
+          "hasDefinedTerm.identifier"
+        ]
+      },
+      {
+        "path": "variableMeasured[].subjectOf.hasDefinedTerm[]",
+        "fields": {
+          "id": "identifier",
+          "label": "name"
+        },
+        "if_any": [
+          "identifier"
+        ]
+      }
+    ],
+    "data_types": [
+      "additionalType"
+    ],
+    "representations": [
+      {
+        "path": "distribution[].encodingFormat",
+        "maps": {
+          "value": {
+            "text/tab-separated-values": "Tabular data",
+            "audio/x-wav": "Waveform audio recording"
+          }
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "distribution[]",
+        "fields": {
+          "name": "contentUrl",
+          "mime": "encodingFormat"
+        },
+        "complete": false
+      }
+    ],
+    "actors": [
+      {
+        "path": "creator[]",
+        "fields": {
+          "name": "name",
+          "given": "givenName",
+          "family": "familyName",
+          "type": "@type"
+        },
+        "identifiers": {
+          "orcid": "identifier"
+        },
+        "maps": {
+          "type": {
+            "Person": "person",
+            "Organization": "organization"
+          }
+        },
+        "role": "Creator"
+      },
+      {
+        "path": "publisher.name",
+        "role": "Publisher",
+        "type": "organization"
+      }
+    ],
+    "institutions": [
+      {
+        "path": "publisher.name",
+        "role": "Publisher"
+      }
+    ],
+    "dates": [
+      {
+        "path": "datePublished",
+        "event": "publication",
+        "parser": "iso"
+      }
+    ],
+    "entities": [],
+    "variables": [
+      {
+        "path": "variableMeasured[]",
+        "fields": {
+          "name": "name"
+        }
+      }
+    ],
+    "spatial": [
+      {
+        "path": "spatialCoverage.geo",
+        "fields": {
+          "latitude": "latitude",
+          "longitude": "longitude"
+        },
+        "if_any": [
+          "latitude",
+          "longitude"
+        ],
+        "crs": "EPSG:4326",
+        "scope": "dataset"
+      },
+      {
+        "path": "spatialCoverage.geo",
+        "fields": {
+          "geometry": ""
+        },
+        "if_any": [
+          "box"
+        ],
+        "crs": "EPSG:4326",
+        "scope": "dataset"
+      }
+    ],
+    "temporal": [
+      {
+        "path": "",
+        "fields": {
+          "point": "temporalCoverage"
+        },
+        "if_any": [
+          "temporalCoverage"
+        ],
+        "event": "coverage",
+        "parser": "iso_interval"
+      }
+    ],
+    "production_items": [
+      {
+        "path": "variableMeasured[]",
+        "fields": {
+          "name": "measurementTechnique",
+          "scope": "name"
+        },
+        "if_any": [
+          "measurementTechnique"
+        ],
+        "role": "generation"
+      }
+    ],
+    "production_text": [
+      "variableMeasured[].description"
+    ],
+    "relations": [
+      {
+        "path": "isPartOf",
+        "namespace": "doi",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "",
+        "fields": {
+          "target": "citation.identifier"
+        },
+        "if_any": [
+          "citation.identifier",
+          "citation.name"
+        ],
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "citation[]",
+        "fields": {
+          "target": "identifier"
+        },
+        "predicate": "references",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "@reverse.isBasedOn.identifier",
+        "predicate": "isDerivedFrom",
+        "direction": "target_to_dataset"
+      }
+    ]
+  }
+}

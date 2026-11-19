@@ -1,0 +1,138 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "ena",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://www.ncbi.nlm.nih.gov/geo/info/linking.html",
+    "https://ena-docs.readthedocs.io/en/latest/retrieval/programmatic-access/taxon-api.html",
+    "https://ena-docs.readthedocs.io/en/latest/submit/general-guide/accessions.html",
+    "https://www.ebi.ac.uk/ena/portal/api/returnFields?result=study",
+    "https://ena-docs.readthedocs.io/en/latest/retrieval/programmatic-access/advanced-search.html",
+    "https://ena-docs.readthedocs.io/en/latest/submit/study/programmatic.html#accession-numbers-in-the-receipt-xml",
+    "https://ena-docs.readthedocs.io/en/latest/faq/accounts.html",
+    "https://ena-browser-docs.readthedocs.io/en/latest/browser/ena-record.html#parent-projects",
+    "https://ena-docs.readthedocs.io/en/latest/retrieval/programmatic-access/tag_querying.html#xref",
+    "https://www.ncbi.nlm.nih.gov/sra/docs/submitgeo/"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "study_accession",
+        "namespace": "ena_study",
+        "level": "object"
+      },
+      {
+        "path": "accession",
+        "namespace": "ena_study",
+        "level": "object"
+      },
+      {
+        "path": "secondary_study_accession",
+        "namespace": "ena_study",
+        "level": "object",
+        "if_any": [""]
+      }
+    ],
+    "titles": [
+      "study_title",
+      "study_name",
+      "project_name"
+    ],
+    "descriptions": [
+      "study_description",
+      "description"
+    ],
+    "terms": [
+      "keywords",
+      "scientific_name",
+      "tax_id",
+      "tax_division"
+    ],
+    "controlled_subjects": [
+      {
+        "namespace": "ncbi_taxonomy",
+        "path": "",
+        "fields": {
+          "id": "tax_id",
+          "label": "scientific_name"
+        },
+        "if_any": ["tax_id"]
+      }
+    ],
+    "data_types": [],
+    "representations": [],
+    "files": [],
+    "actors": [
+      {
+        "path": "center_name",
+        "role": "Submitting center",
+        "type": "organization",
+        "if_any": [""]
+      },
+      {
+        "path": "broker_name",
+        "role": "Data broker",
+        "type": "organization",
+        "if_any": [""]
+      }
+    ],
+    "institutions": [
+      {
+        "path": "center_name",
+        "role": "Submitting center",
+        "if_any": [""]
+      }
+    ],
+    "dates": [
+      {
+        "path": "first_public",
+        "event": "publication",
+        "parser": "iso"
+      },
+      {
+        "path": "last_updated",
+        "event": "update",
+        "parser": "iso"
+      }
+    ],
+    "entities": [
+      {
+        "path": "",
+        "fields": {
+          "value": "scientific_name",
+          "id": "tax_id"
+        },
+        "if_any": ["scientific_name", "tax_id"]
+      },
+      "strain",
+      "isolate",
+      "breed",
+      "cultivar"
+    ],
+    "variables": [],
+    "spatial": [],
+    "temporal": [],
+    "production_items": [],
+    "production_text": [],
+    "relations": [
+      {
+        "path": "parent_study_accession",
+        "separator": ";",
+        "namespace": "ena_study",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target",
+        "if_any": [""],
+        "complete": false
+      },
+      {
+        "path": "geo_accession",
+        "namespace": "geo_accession",
+        "predicate": "cross-reference",
+        "direction": "dataset_to_target",
+        "if_any": [""]
+      }
+    ]
+  }
+}

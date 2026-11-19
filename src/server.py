@@ -12,7 +12,11 @@ if __name__ == "__main__" and not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     __package__ = "src"
 
-from .adapters import icpsr_adapter, mast_adapter, metabolights_adapter, opencontext_adapter, zenodo_adapter
+from .adapters import (
+    cern_open_data_adapter, ena_adapter, gbif_adapter, mast_adapter, metabolights_adapter,
+    nomad_central_adapter, opencontext_adapter, openml_adapter, openneuro_adapter,
+    pangaea_adapter, zenodo_adapter,
+)
 from .utils.references import DOI_HOSTS, extract_doi, resolve_doi
 from .searchability.evaluator import describe_translation
 from .searchability.profile import load_translation
@@ -22,46 +26,45 @@ HOST = "0.0.0.0"
 PORT = 8080
 MAX_REQUEST_BODY_SIZE = 64 * 1024
 HTML_PAGE = Path(__file__).with_name("index.html").read_text(encoding="utf-8")
-SERVICE_NAMES = {host: zenodo_adapter.DISPLAY_NAME for host in zenodo_adapter.HOSTS}
-SERVICE_NAMES.update({host: icpsr_adapter.DISPLAY_NAME for host in icpsr_adapter.HOSTS})
-SERVICE_NAMES.update({host: opencontext_adapter.DISPLAY_NAME for host in opencontext_adapter.HOSTS})
-SERVICE_NAMES.update({host: mast_adapter.DISPLAY_NAME for host in mast_adapter.HOSTS})
-SERVICE_NAMES.update({host: metabolights_adapter.DISPLAY_NAME for host in metabolights_adapter.HOSTS})
-SERVICE_NAMES["api.datacite.org"] = "DataCite (ICPSR metadata)"
+ADAPTERS = {adapter.REPOSITORY: adapter for adapter in (
+    cern_open_data_adapter, ena_adapter, gbif_adapter, mast_adapter, metabolights_adapter,
+    nomad_central_adapter, opencontext_adapter, openml_adapter, openneuro_adapter,
+    pangaea_adapter, zenodo_adapter,
+)}
+SERVICE_NAMES = {host: adapter.DISPLAY_NAME for adapter in ADAPTERS.values() for host in adapter.HOSTS}
+SERVICE_NAMES.update({host: "EMBL-EBI" for host in ena_adapter.HOSTS & metabolights_adapter.HOSTS})
 SERVICE_NAMES.update({host: "DOI resolver" for host in DOI_HOSTS})
-ADAPTERS = {adapter.REPOSITORY: adapter for adapter in (zenodo_adapter, icpsr_adapter, opencontext_adapter, mast_adapter, metabolights_adapter)}
 
 
 class ClientInputError(ValueError):
     """Raised when the submitted reference cannot be processed."""
 
 
+def _matching_adapters(reference, candidates):
+    return [adapter for adapter in candidates if adapter.can_handle(reference)]
+
+
 def evaluate_reference(reference: str, repository: str = "auto", *, on_event=None) -> dict[str, Any]:
     if not isinstance(repository, str) or repository not in {"auto", *ADAPTERS}:
-        raise ClientInputError("Choose Zenodo, ICPSR, Open Context, MAST, MetaboLights or automatic repository detection.")
+        raise ClientInputError("Unknown repository.")
+    reference = reference.strip()
     requested_reference = reference
-    if repository == "mast":
-        if mast_adapter.parse_reference(reference) is None:
-            raise ClientInputError("Enter a MAST obsid, collection/obs_id, or an exact observation query URL.")
-        return mast_adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
-    if repository == "icpsr" or (repository == "auto" and icpsr_adapter.can_handle(reference)):
-        if not icpsr_adapter.can_handle(reference, allow_numeric=True):
-            raise ClientInputError("Enter an ICPSR study number, study URL or version DOI.")
-        return icpsr_adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
-    candidates = list(ADAPTERS.values()) if repository == "auto" else [ADAPTERS[repository]]
-    for adapter in candidates:
-        if adapter.can_handle(reference):
-            return adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
-    doi = extract_doi(reference)
-    if doi is not None:
+    candidates = ADAPTERS.values() if repository == "auto" else (ADAPTERS[repository],)
+    matches = _matching_adapters(reference, candidates)
+    if len(matches) != 1 and (doi := extract_doi(reference)) is not None:
         reference = resolve_doi(doi)
-        for adapter in candidates:
-            if adapter.can_handle(reference):
-                return adapter.fetch(reference, requested_reference=requested_reference, on_event=on_event)
-    raise ClientInputError(
-        "Provide a supported repository DOI/record URL, an Open Context UUID, a MAST:obsid reference or a MetaboLights MTBLS accession. "
-        "Select ICPSR or MAST when entering their numeric IDs."
-    )
+        matches = _matching_adapters(reference, candidates)
+    if not matches:
+        raise ClientInputError(
+            "No supported repository recognizes this reference. Enter a DOI, full record URL or repository-prefixed identifier."
+        )
+    if len(matches) > 1:
+        prefixes = ", ".join(f"{adapter.REPOSITORY}:" for adapter in matches)
+        raise ClientInputError(
+            "This identifier matches multiple repositories. Enter its record URL or DOI, "
+            f"or add one of these prefixes to the ID ({prefixes})."
+        )
+    return matches[0].fetch(reference, requested_reference=requested_reference, on_event=on_event)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -76,6 +79,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/catalogue":
             repository = parse_qs(urlsplit(self.path).query).get("repository", ["zenodo"])[0]
+            if repository == "auto":
+                self._send_json(200, describe_translation())
+                return
             adapter = ADAPTERS.get(repository)
             if adapter is None:
                 self._send_json(400, {"error": "Unknown repository."})
@@ -105,7 +111,7 @@ class Handler(BaseHTTPRequestHandler):
             body = self._read_json_body()
             reference = body.get("reference")
             if not isinstance(reference, str) or not reference.strip():
-                raise ClientInputError("Enter a supported repository DOI, record URL, record ID or MetaboLights MTBLS accession.")
+                raise ClientInputError("Enter a DOI, record URL or repository accession.")
 
             streaming = "application/x-ndjson" in self.headers.get("Accept", "").lower()
             result = evaluate_reference(

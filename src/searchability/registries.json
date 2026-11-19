@@ -178,6 +178,124 @@
         "MTBLS": "MTBLS"
       },
       "resolver": "https://www.ebi.ac.uk/metabolights/{value}"
+    },
+    "cern_record": {
+      "pattern": "[1-9][0-9]*",
+      "integer": true,
+      "prefixes": [
+        "oai:cernopendata.cern:",
+        "cern-open-data:"
+      ],
+      "prefix_pattern": "https?://opendata\\.cern\\.ch/(?:record|api/records)/([1-9][0-9]*)/?",
+      "resolver": "https://opendata.cern.ch/record/{value}"
+    },
+    "ena_study": {
+      "pattern": "(?:PRJ[EDN][A-Z][0-9]+|[EDS]RP[0-9]{6,})",
+      "uppercase": true,
+      "detect_bare": true,
+      "prefix_pattern": "https?://(?:www\\.)?ebi\\.ac\\.uk/ena/browser/view/((?:PRJ[EDN][A-Z][0-9]+|[EDS]RP[0-9]{6,}))/?",
+      "resolver": "https://www.ebi.ac.uk/ena/browser/view/{value}"
+    },
+    "ncbi_taxonomy": {
+      "pattern": "[1-9][0-9]*",
+      "integer": true,
+      "prefixes": [
+        "taxon:"
+      ],
+      "prefix_pattern": "https?://(?:www\\.)?ebi\\.ac\\.uk/ena/taxonomy/rest/tax-id/([1-9][0-9]*)/?",
+      "resolver": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={value}"
+    },
+    "mhd_study": {
+      "pattern": "MHD[A-Z]?[0-9]{6,8}",
+      "uppercase": true,
+      "detect_bare": true
+    },
+    "opencontext_slug": {
+      "pattern": "[A-Za-z0-9_-]{1,200}"
+    },
+    "openml_dataset": {
+      "pattern": "[1-9][0-9]*",
+      "integer": true,
+      "prefixes": [
+        "openml:"
+      ],
+      "prefix_pattern": "https?://(?:www\\.|api\\.)?openml\\.org/(?:d|search/data|api/v1/json/data)/([1-9][0-9]*)/?",
+      "resolver": "https://www.openml.org/d/{value}"
+    },
+    "openneuro_dataset": {
+      "pattern": "ds[0-9]{6,}",
+      "casefold": true,
+      "detect_bare": true,
+      "prefix_pattern": "https?://(?:www\\.)?openneuro\\.org/datasets/(ds[0-9]{6,})/?",
+      "resolver": "https://openneuro.org/datasets/{value}"
+    },
+    "openneuro_snapshot": {
+      "pattern": "ds[0-9]{6,}:(?:0|[1-9][0-9]*)(?:\\.(?:0|[1-9][0-9]*)){2}",
+      "casefold": true,
+      "detect_bare": true
+    },
+    "nomad_entry": {
+      "pattern": "[A-Za-z0-9_-]{28}",
+      "resolver": "https://nomad-lab.eu/prod/v1/api/v1/entries/{value}"
+    },
+    "nomad_dataset": {
+      "pattern": "[A-Za-z0-9_-]{22}",
+      "resolver": "https://nomad-lab.eu/prod/v1/api/v1/datasets/{value}"
+    },
+    "nomad_upload": {
+      "pattern": "[A-Za-z0-9_-]{22}",
+      "resolver": "https://nomad-lab.eu/prod/v1/api/v1/uploads/{value}"
+    },
+    "nomad_pid": {
+      "pattern": "[0-9]+",
+      "integer": true
+    },
+    "chebi": {
+      "pattern": "CHEBI_[1-9][0-9]*",
+      "uppercase": true,
+      "detect_bare": true,
+      "prefix_pattern": "https?://purl\\.obolibrary\\.org/obo/(CHEBI_[1-9][0-9]*)/?",
+      "replacements": {
+        "CHEBI:": "CHEBI_"
+      },
+      "resolver": "https://purl.obolibrary.org/obo/{value}"
+    },
+    "pato": {
+      "pattern": "PATO_[0-9]{7}",
+      "uppercase": true,
+      "detect_bare": true,
+      "prefix_pattern": "https?://purl\\.obolibrary\\.org/obo/(PATO_[0-9]{7})/?",
+      "replacements": {
+        "PATO:": "PATO_",
+        "urn:obo:pato:term:": "PATO_"
+      },
+      "resolver": "https://purl.obolibrary.org/obo/{value}"
+    },
+    "chmo": {
+      "pattern": "CHMO_[0-9]{7}",
+      "uppercase": true,
+      "detect_bare": true,
+      "prefix_pattern": "https?://purl\\.obolibrary\\.org/obo/(CHMO_[0-9]{7})/?",
+      "replacements": {
+        "CHMO:": "CHMO_"
+      },
+      "resolver": "https://purl.obolibrary.org/obo/{value}"
+    },
+    "ncit": {
+      "pattern": "NCIT_C[1-9][0-9]*",
+      "uppercase": true,
+      "detect_bare": true,
+      "prefix_pattern": "https?://purl\\.obolibrary\\.org/obo/(NCIT_C[1-9][0-9]*)/?",
+      "replacements": {
+        "NCIT:": "NCIT_"
+      },
+      "resolver": "https://purl.obolibrary.org/obo/{value}"
+    },
+    "geo_accession": {
+      "pattern": "(?:GSE|GSM|GPL|GDS)[1-9][0-9]*",
+      "uppercase": true,
+      "detect_bare": true,
+      "resolver": "https://identifiers.org/geo:{value}"
     }
   },
   "placeholders": {
@@ -455,6 +573,37 @@
         "oecd fos 2007"
       ],
       "pattern": "[1-6](?:\\.[0-9]{1,2})?"
+    },
+    "ncbi_taxonomy": {
+      "aliases": [
+        "ncbi_taxonomy",
+        "ncbi taxonomy"
+      ],
+      "pattern": "https?://(?:www\\.)?ebi\\.ac\\.uk/ena/taxonomy/rest/tax-id/[1-9][0-9]*/?"
+    },
+    "chebi": {
+      "aliases": [
+        "chebi"
+      ],
+      "pattern": "https?://purl\\.obolibrary\\.org/obo/(CHEBI_[1-9][0-9]*)/?|CHEBI[:_][1-9][0-9]*"
+    },
+    "pato": {
+      "aliases": [
+        "pato"
+      ],
+      "pattern": "https?://purl\\.obolibrary\\.org/obo/(PATO_[0-9]{7})/?|PATO[:_][0-9]{7}"
+    },
+    "chmo": {
+      "aliases": [
+        "chmo"
+      ],
+      "pattern": "https?://purl\\.obolibrary\\.org/obo/(CHMO_[0-9]{7})/?|CHMO[:_][0-9]{7}"
+    },
+    "ncit": {
+      "aliases": [
+        "ncit"
+      ],
+      "pattern": "https?://purl\\.obolibrary\\.org/obo/(NCIT_C[1-9][0-9]*)/?|NCIT[:_]C[1-9][0-9]*"
     }
   },
   "dateEvents": {

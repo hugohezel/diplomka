@@ -1,0 +1,323 @@
+{
+  "$schema": "../searchability/translation.schema.json",
+  "version": 2,
+  "repository": "gbif",
+  "catalogue": "searchability-v1",
+  "registries": "core-v1",
+  "sources": [
+    "https://techdocs.gbif.org/openapi/registry.json",
+    "https://ipt.gbif.org/manual/en/ipt/latest/gbif-metadata-profile",
+    "https://ipt.gbif.org/manual/en/ipt/latest/manage-resources",
+    "https://ipt.gbif.org/manual/en/ipt/latest/user-id",
+    "https://ipt.gbif.org/manual/en/ipt/latest/datacite-mappings",
+    "https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/ContactType.html"
+  ],
+  "bindings": {
+    "dataset_ids": [
+      {
+        "path": "key",
+        "namespace": "uuid",
+        "level": "object"
+      },
+      {
+        "path": "doi",
+        "namespace": "doi",
+        "level": "object"
+      },
+      {
+        "path": "citation.identifier",
+        "level": "object"
+      },
+      {
+        "path": "identifiers[]",
+        "fields": {
+          "value": "identifier",
+          "scheme": "type"
+        }
+      }
+    ],
+    "titles": [
+      {
+        "path": "",
+        "fields": {
+          "value": "title",
+          "language": "language"
+        }
+      }
+    ],
+    "descriptions": [
+      {
+        "path": "description",
+        "html": true
+      },
+      {
+        "path": "introduction",
+        "html": true
+      },
+      {
+        "path": "gettingStarted",
+        "html": true
+      },
+      {
+        "path": "taxonomicCoverages[].description",
+        "html": true
+      }
+    ],
+    "terms": [
+      "keywordCollections[].keywords[]",
+      "tags[].value",
+      "taxonomicCoverages[].coverages[].scientificName",
+      "taxonomicCoverages[].coverages[].commonName"
+    ],
+    "controlled_subjects": [],
+    "data_types": [
+      {
+        "path": "type",
+        "maps": {
+          "value": {
+            "OCCURRENCE": "Biodiversity occurrence records",
+            "CHECKLIST": "Taxonomic checklist",
+            "METADATA": "Dataset metadata",
+            "SAMPLING_EVENT": "Biodiversity sampling event records"
+          }
+        }
+      },
+      {
+        "path": "subtype",
+        "maps": {
+          "value": {
+            "TAXONOMIC_AUTHORITY": "Taxonomic authority checklist",
+            "NOMENCLATOR_AUTHORITY": "Nomenclatural authority checklist",
+            "INVENTORY_THEMATIC": "Thematic taxonomic inventory",
+            "INVENTORY_REGIONAL": "Regional taxonomic inventory",
+            "GLOBAL_SPECIES_DATASET": "Global species dataset",
+            "DERIVED_FROM_OCCURRENCE": "Checklist derived from occurrence records",
+            "SPECIMEN": "Specimen records",
+            "OBSERVATION": "Observation records"
+          }
+        }
+      }
+    ],
+    "representations": [
+      {
+        "path": "dwca.coreType",
+        "maps": {
+          "value": {
+            "http://rs.tdwg.org/dwc/terms/Occurrence": "Darwin Core occurrence table",
+            "http://rs.tdwg.org/dwc/terms/Event": "Darwin Core sampling event table",
+            "http://rs.tdwg.org/dwc/terms/Taxon": "Darwin Core taxon table"
+          }
+        }
+      },
+      "dwca.extensions[]"
+    ],
+    "files": [
+      {
+        "path": "dataDescriptions[]",
+        "fields": {
+          "name": "name",
+          "format": "format"
+        },
+        "complete": false
+      }
+    ],
+    "actors": [
+      {
+        "path": "contacts[]",
+        "fields": {
+          "given": "firstName",
+          "family": "lastName",
+          "affiliation": "organization",
+          "role": "type",
+          "role_text": "type"
+        },
+        "identifiers": {
+          "url": "userId[]"
+        },
+        "maps": {
+          "role": {
+            "TECHNICAL_POINT_OF_CONTACT": "ContactPerson",
+            "ADMINISTRATIVE_POINT_OF_CONTACT": "ContactPerson",
+            "POINT_OF_CONTACT": "ContactPerson",
+            "ORIGINATOR": "Creator",
+            "METADATA_AUTHOR": "DataCurator",
+            "PRINCIPAL_INVESTIGATOR": "ProjectLeader",
+            "AUTHOR": "Other",
+            "CONTENT_PROVIDER": "Contributor",
+            "CUSTODIAN_STEWARD": "DataManager",
+            "OWNER": "RightsHolder",
+            "PROCESSOR": "Producer",
+            "PUBLISHER": "Other",
+            "USER": "Other",
+            "PROGRAMMER": "Contributor",
+            "CURATOR": "DataCurator",
+            "DATA_ADMINISTRATOR": "DataManager"
+          }
+        }
+      },
+      {
+        "path": "project.contacts[]",
+        "fields": {
+          "given": "firstName",
+          "family": "lastName",
+          "affiliation": "organization",
+          "role": "type",
+          "role_text": "type"
+        },
+        "identifiers": {
+          "url": "userId[]"
+        },
+        "scope": "project",
+        "maps": {
+          "role": {
+            "TECHNICAL_POINT_OF_CONTACT": "ContactPerson",
+            "ADMINISTRATIVE_POINT_OF_CONTACT": "ContactPerson",
+            "POINT_OF_CONTACT": "ContactPerson",
+            "ORIGINATOR": "ProjectMember",
+            "METADATA_AUTHOR": "DataCurator",
+            "PRINCIPAL_INVESTIGATOR": "ProjectLeader",
+            "AUTHOR": "Other",
+            "CONTENT_PROVIDER": "Contributor",
+            "CUSTODIAN_STEWARD": "DataManager",
+            "OWNER": "RightsHolder",
+            "PROCESSOR": "Producer",
+            "PUBLISHER": "Other",
+            "USER": "Other",
+            "PROGRAMMER": "Contributor",
+            "CURATOR": "DataCurator",
+            "DATA_ADMINISTRATOR": "DataManager"
+          }
+        }
+      },
+      {
+        "path": "",
+        "fields": {
+          "name": "publishingOrganizationName"
+        },
+        "identifiers": {
+          "uuid": "publishingOrganizationKey"
+        },
+        "role": "Publisher",
+        "type": "organization",
+        "if_any": ["publishingOrganizationName"]
+      }
+    ],
+    "institutions": [
+      {
+        "path": "publishingOrganizationName",
+        "role": "Publisher"
+      }
+    ],
+    "dates": [
+      {
+        "path": "pubDate",
+        "event": "publication",
+        "parser": "iso"
+      },
+      {
+        "path": "modified",
+        "event": "update",
+        "parser": "iso"
+      }
+    ],
+    "entities": [
+      "taxonomicCoverages[].coverages[].scientificName",
+      "taxonomicCoverages[].coverages[].commonName"
+    ],
+    "variables": [],
+    "spatial": [
+      {
+        "path": "geographicCoverages[]",
+        "fields": {
+          "place": "description",
+          "geometry": "boundingBox"
+        },
+        "scope": "dataset"
+      },
+      {
+        "path": "geographicCoverageDescription",
+        "scope": "dataset"
+      },
+      {
+        "path": "countryCoverage[]",
+        "scope": "dataset"
+      }
+    ],
+    "temporal": [
+      {
+        "path": "temporalCoverages[]",
+        "fields": {
+          "point": "date",
+          "start": "start",
+          "end": "end"
+        },
+        "event": "coverage",
+        "parser": "iso",
+        "if_any": ["date", "start", "end"]
+      },
+      {
+        "path": "temporalCoverages[]",
+        "fields": {
+          "point": "period"
+        },
+        "event": "coverage",
+        "parser": "iso_interval",
+        "if_any": ["period"],
+        "complete": false
+      }
+    ],
+    "production_items": [],
+    "production_text": [
+      {
+        "path": "samplingDescription.studyExtent",
+        "html": true
+      },
+      {
+        "path": "samplingDescription.sampling",
+        "html": true
+      },
+      {
+        "path": "samplingDescription.methodSteps[]",
+        "html": true
+      },
+      {
+        "path": "samplingDescription.qualityControl",
+        "html": true
+      },
+      {
+        "path": "project.designDescription",
+        "html": true
+      }
+    ],
+    "relations": [
+      {
+        "path": "parentDatasetKey",
+        "namespace": "uuid",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "duplicateOfDatasetKey",
+        "namespace": "uuid",
+        "predicate": "isDuplicateOf",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "networkKeys[]",
+        "namespace": "uuid",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "project.identifier",
+        "predicate": "isPartOf",
+        "direction": "dataset_to_target"
+      },
+      {
+        "path": "bibliographicCitations[].identifier",
+        "predicate": "cites",
+        "direction": "dataset_to_target"
+      }
+    ]
+  }
+}

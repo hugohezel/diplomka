@@ -11,19 +11,13 @@
   <main>
     <h1>Metadata Checker</h1>
     <form id="record-form">
-      <select id="repository-select" name="repository" aria-label="Repository">
-        <option value="zenodo">Zenodo</option>
-        <option value="icpsr">ICPSR</option>
-        <option value="opencontext">Open Context</option>
-        <option value="mast">MAST</option>
-        <option value="metabolights">MetaboLights</option>
-      </select>
       <input id="record-reference" name="reference" type="text"
-        value="10.5281/zenodo.3357455" placeholder="Repository DOI, record URL or ID; MetaboLights MTBLS accession"
-        aria-label="Repository DOI, record URL or ID; MetaboLights MTBLS accession" autocomplete="off" required />
+        placeholder="Enter a DOI, record URL or accession"
+        aria-label="DOI, record URL or repository accession" aria-describedby="reference-hint"
+        autocomplete="off" spellcheck="false" required />
       <button id="submit-button" type="submit">Check</button>
     </form>
-    <p class="hint">Find a record on <a id="repository-link" href="https://zenodo.org/" target="_blank" rel="noopener noreferrer">Zenodo</a> and enter its reference.</p>
+    <p class="hint" id="reference-hint">For ambiguous IDs, use the record URL or a prefixed ID such as <code>Zenodo:1319069</code>.</p>
     <div id="status" role="status" aria-live="polite"></div>
     <section class="score-summary" aria-label="Searchability scores">
       <div id="scores-output" class="scores" aria-live="polite"></div>
